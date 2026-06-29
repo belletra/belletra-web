@@ -2,17 +2,18 @@
 
 ## Environments
 
-| Environment | Branch    | URL                              | Stripe      |
-|-------------|-----------|----------------------------------|-------------|
-| Staging     | `staging` | belletra-web-staging.pages.dev   | Test keys   |
-| Production  | `main`    | belletra.app                     | Live keys   |
+| Environment | Branch    | URL                        | Stripe      |
+|-------------|-----------|----------------------------|-------------|
+| Staging     | `staging` | staging.belletra.app       | Test keys   |
+| Production  | `main`    | belletra.app               | Live keys   |
 
 ## Workflow
 
 1. Develop on `staging` branch
-2. Test at belletra-web-staging.pages.dev
-3. Merge `staging` → `main` when ready
-4. Deploy to production
+2. Deploy: `npm run deploy:staging`
+3. Test at https://staging.belletra.app
+4. Merge `staging` → `main`
+5. Deploy: `npm run deploy:production`
 
 ## Commands
 
@@ -26,11 +27,11 @@ npm run deploy:production
 
 ## Env files (gitignored — keep locally)
 
-- `.env.staging`  — staging config (Stripe test keys)
-- `.env.production` — production config (Stripe live keys)
+- `.env.staging`    — staging config (Stripe test keys, staging.belletra.app)
+- `.env.production` — production config (Stripe live keys, belletra.app)
 
-## Supabase Edge Function secrets
+## Supabase Edge Functions
 
-Staging and production share the same Supabase project.
-Stripe keys are injected via `supabase secrets set --project-ref lnxwunwkuikqwpqvwckf`.
-Currently set to TEST mode. Switch to LIVE keys before production launch.
+Both envs share the same Supabase project (lnxwunwkuikqwpqvwckf).
+Stripe secrets currently set to TEST mode.
+Before production launch: re-run `supabase secrets set` with live Stripe keys.
