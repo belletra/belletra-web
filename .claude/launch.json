@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "belletra-dev",
+      "runtimeExecutable": "/Users/ruiyangzhang/.nvm/versions/node/v24.2.0/bin/node",
+      "runtimeArgs": ["node_modules/.bin/vite", "--port", "5175"],
+      "port": 5175
+    }
+  ]
+}

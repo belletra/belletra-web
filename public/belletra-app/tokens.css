@@ -1,0 +1,106 @@
+/* Belletra — design tokens. Light is default; [data-mode="dark"] overrides. */
+:root {
+  --ink:   #211E18;
+  --soft:  #5D574C;
+  --faint: #9A9384;
+  --paper: #F3EEE3;
+  --card:  #FFFEFB;
+  --line:  #E7E0D1;
+  --line2: #D8D0BF;
+  --gold:  #A06F24;
+  --goldHi:#C79444;
+  --blue:  #3A67A0;
+  --rose:  #B0455D;
+  --green: #3A7A4C;
+  --goldBg: rgba(160,111,36,.12);
+  --blueBg: rgba(58,103,160,.10);
+  --roseBg: rgba(176,69,93,.09);
+  --greenBg: rgba(58,122,76,.10);
+
+  /* the neutral surround behind the device */
+  --surround: #E4DFD4;
+  --surround2: #DAD4C6;
+
+  /* device */
+  --bezel: #D8D0BF;
+  --bezel-edge: #C8BFAC;
+
+  --serif: "Spectral", "Iowan Old Style", Georgia, Palatino, "Palatino Linotype", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --shadow-device: 0 28px 70px rgba(40,30,15,.30), 0 8px 22px rgba(40,30,15,.14);
+  --shadow-card: 0 8px 22px rgba(40,30,15,.08);
+  --shadow-cta: 0 6px 18px rgba(160,111,36,.26);
+
+  --ease: cubic-bezier(.2,.7,.2,1);
+}
+
+[data-mode="dark"] {
+  --ink:   #EDE7DC;
+  --soft:  #B0A899;
+  --faint: #857E70;
+  --paper: #191510;
+  --card:  #221D17;
+  --line:  #37312A;
+  --line2: #48413A;
+  --gold:  #CAA055;
+  --goldHi:#DCB978;
+  --blue:  #83ADD9;
+  --rose:  #DD8BA0;
+  --green: #86C79B;
+  --goldBg: rgba(202,160,85,.14);
+  --blueBg: rgba(131,173,217,.12);
+  --roseBg: rgba(221,139,160,.12);
+  --greenBg: rgba(134,199,155,.12);
+
+  --surround: #0E0B08;
+  --surround2: #161109;
+  --bezel: #2A241D;
+  --bezel-edge: #3A332B;
+
+  --shadow-device: 0 28px 80px rgba(0,0,0,.6), 0 8px 24px rgba(0,0,0,.5);
+  --shadow-card: 0 8px 22px rgba(0,0,0,.35);
+  --shadow-cta: 0 6px 18px rgba(0,0,0,.4);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  min-height: 100vh;
+  color: var(--ink);
+  transition: background .5s var(--ease);
+}
+
+/* numerals: oldstyle figures on serif where the font allows */
+.serif { font-family: var(--serif); font-feature-settings: "onum" 1, "liga" 1, "calt" 1; }
+
+::selection { background: var(--goldBg); }
+
+/* keyboard focus — a quiet gold ring; only shows for keyboard/AT users, not mouse */
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* thin scrollbar inside the phone */
+.bl-scroll::-webkit-scrollbar { width: 0; height: 0; }
+.bl-scroll { scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* short-circuit every keyframe + transition (blReveal/blPop/blShake/blGild/blCaret/blWave, etc.) */
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
