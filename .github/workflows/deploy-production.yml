@@ -26,6 +26,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY_LIVE }}
+          VITE_CHECKOUT_FUNCTION: create-checkout
 
       - name: Deploy to Cloudflare Pages (production)
         uses: cloudflare/wrangler-action@v3

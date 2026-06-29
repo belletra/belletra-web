@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { AppNav } from '../components/AppNav'
 import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
 import { supabase } from '../lib/supabase'
+import { CHECKOUT_FUNCTION } from '../lib/functions'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 
@@ -21,7 +22,7 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
     if (!userId || loading) return
     setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
+      const { data, error } = await supabase.functions.invoke(CHECKOUT_FUNCTION, {
         body: { plan, userId, email },
       })
       if (error || !data?.url) throw error ?? new Error('No checkout URL')

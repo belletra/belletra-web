@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getSubscriptionStatus } from '../lib/db'
+import { CHECKOUT_FUNCTION } from '../lib/functions'
 import { AppNav } from '../components/AppNav'
 import { useDarkMode } from '../hooks/useDarkMode'
 
@@ -34,7 +35,7 @@ export default function Account() {
     if (!userId || checkoutLoading) return
     setCheckoutLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
+      const { data, error } = await supabase.functions.invoke(CHECKOUT_FUNCTION, {
         body: { plan: 'year', userId, email },
       })
       if (error || !data?.url) throw error ?? new Error('No checkout URL')
