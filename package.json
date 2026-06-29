@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:staging": "tsc -b && vite build --mode staging",
+    "build:production": "tsc -b && vite build --mode production",
+    "deploy:staging": "npm run build:staging && wrangler pages deploy dist --project-name belletra-web-staging",
+    "deploy:production": "npm run build:production && wrangler pages deploy dist --project-name belletra-web --branch main",
     "lint": "oxlint",
     "preview": "vite preview"
   },
