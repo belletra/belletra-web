@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { AppNav } from '../components/AppNav'
-import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
+import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { CHECKOUT_FUNCTION } from '../lib/functions'
 
@@ -275,11 +275,14 @@ export default function Sentence() {
   const handleKeep = async () => {
     if (!data || kept) return
     setKept(true)
-    await addToAnthology({
-      text: data.sentence.text,
-      author: data.sentence.author,
-      theme: data.sentence.feature ?? '',
-    })
+    await Promise.all([
+      addToAnthology({
+        text: data.sentence.text,
+        author: data.sentence.author,
+        theme: data.sentence.feature ?? '',
+      }),
+      addWordsToQueue(data.sentence.id, data.words, data.sentence.author),
+    ])
   }
 
   if (loading) return (

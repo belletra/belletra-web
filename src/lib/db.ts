@@ -196,6 +196,26 @@ export async function addToAnthology(item: Omit<AnthologyItem, 'id'>): Promise<v
 
 // ── User-scoped (requires auth) ────────────────────────────────────────────────
 
+export async function addWordsToQueue(
+  sentenceId: string,
+  words: Array<{ token: string; gloss: string | null }>,
+  author: string,
+): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  const rows = words
+    .filter(w => w.gloss)
+    .map(w => ({
+      user_id: user.id,
+      sentence_id: sentenceId,
+      token: w.token,
+      gloss: w.gloss,
+      source_author: author,
+    }))
+  if (rows.length === 0) return
+  await supabase.from('user_word_queue').upsert(rows, { onConflict: 'user_id,sentence_id,token', ignoreDuplicates: true })
+}
+
 export async function getWordQueue(): Promise<WordQueueItem[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
