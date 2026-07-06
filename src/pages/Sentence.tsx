@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { AppNav } from '../components/AppNav'
-import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
+import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, logReading, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { CHECKOUT_FUNCTION } from '../lib/functions'
 
@@ -264,7 +264,7 @@ export default function Sentence() {
       if (isLocked) {
         getSentencePreview(id).then(p => { setPreview(p); setLoading(false) })
       } else {
-        getSentenceFull(id).then(d => { setData(d); setLoading(false) })
+        getSentenceFull(id).then(d => { setData(d); setLoading(false); logReading(id) })
       }
     })
   }, [id])
