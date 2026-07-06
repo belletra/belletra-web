@@ -64,11 +64,20 @@ export default function Review() {
               Bringing back · {idx + 1} of {queue.length}
             </div>
             <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 24, boxShadow: 'var(--shadow-card)', padding: 'clamp(36px,6vw,64px) 32px', textAlign: 'center', minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
-              <div className="serif" style={{ fontSize: 'clamp(32px,5vw,48px)', color: 'var(--ink)' }}>{w.token}</div>
+              {w.sentence_text && (
+                <div className="serif" style={{ fontSize: 'clamp(15px,2.2vw,18px)', fontStyle: 'italic', color: 'var(--soft)', lineHeight: 1.6 }}>
+                  {w.sentence_text.split(new RegExp(`(${w.token})`, 'i')).map((part, i) =>
+                    part.toLowerCase() === w.token.toLowerCase()
+                      ? <span key={i} style={{ color: 'var(--gold)', fontStyle: 'normal', fontWeight: 600 }}>{part}</span>
+                      : part
+                  )}
+                </div>
+              )}
+              <div className="serif" style={{ fontSize: 'clamp(28px,4.5vw,44px)', color: 'var(--ink)' }}>{w.token}</div>
               {revealed && (
                 <div style={{ animation: 'blFade .25s both' }}>
                   <div className="serif" style={{ fontSize: 20, fontStyle: 'italic', color: 'var(--gold)' }}>{w.gloss}</div>
-                  {w.source_author && <div style={{ font: '400 12.5px var(--sans)', color: 'var(--faint)', marginTop: 10 }}>from a line by {w.source_author}</div>}
+                  {w.source_author && <div style={{ font: '400 12.5px var(--sans)', color: 'var(--faint)', marginTop: 10 }}>— {w.source_author}</div>}
                 </div>
               )}
             </div>

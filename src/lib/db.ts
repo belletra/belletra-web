@@ -69,6 +69,8 @@ export interface WordQueueItem {
   token: string
   gloss: string
   source_author: string
+  sentence_id: string
+  sentence_text: string
 }
 
 export interface ReadingLogEntry {
@@ -229,14 +231,19 @@ export async function getWordQueue(): Promise<WordQueueItem[]> {
   if (!user) return []
   const { data } = await supabase
     .from('user_word_queue')
-    .select('token, gloss, source_author')
+    .select('token, gloss, source_author, sentence_id, sentences(text)')
     .eq('user_id', user.id)
     .order('added_at', { ascending: false })
     .limit(40)
   if (!data || data.length === 0) return []
-  // Shuffle and return top 20
   const shuffled = [...data].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, 20)
+  return shuffled.slice(0, 20).map((r: any) => ({
+    token: r.token,
+    gloss: r.gloss,
+    source_author: r.source_author,
+    sentence_id: r.sentence_id,
+    sentence_text: r.sentences?.text ?? '',
+  }))
 }
 
 export async function getReadingLog(): Promise<ReadingLogEntry[]> {
