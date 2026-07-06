@@ -130,11 +130,11 @@ export default function Account() {
           </div>
           {!isSubscribed && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button onClick={() => handleUpgrade('year')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--card)', background: checkoutLoading ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'background .2s' }}>
-                {checkoutLoading ? '…' : 'Yearly $39.99'}
-              </button>
               <button onClick={() => handleUpgrade('month')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
                 Monthly $5.99
+              </button>
+              <button onClick={() => handleUpgrade('year')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--card)', background: checkoutLoading ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'background .2s' }}>
+                {checkoutLoading ? '…' : 'Yearly $39.99'}
               </button>
               <button onClick={() => handleUpgrade('lifetime')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
                 Lifetime $129
