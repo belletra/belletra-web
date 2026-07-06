@@ -274,15 +274,17 @@ export default function Sentence() {
 
   const handleKeep = async () => {
     if (!data || kept) return
-    setKept(true)
-    await Promise.all([
+    const [anthErr, wordsErr] = await Promise.all([
       addToAnthology({
         text: data.sentence.text,
         author: data.sentence.author,
         theme: data.sentence.feature ?? '',
-      }),
-      addWordsToQueue(data.sentence.id, data.words, data.sentence.author),
+      }).then(() => null).catch(e => e),
+      addWordsToQueue(data.sentence.id, data.words, data.sentence.author).then(() => null).catch(e => e),
     ])
+    if (anthErr) { console.error('anthology insert failed:', anthErr); return }
+    if (wordsErr) console.warn('word queue insert failed:', wordsErr)
+    setKept(true)
   }
 
   if (loading) return (
