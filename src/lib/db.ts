@@ -172,26 +172,34 @@ export async function getSentenceFull(id: string): Promise<{
   }
 }
 
-// ── Anthology (global for now; RLS will scope per user when enabled) ────────────
+// ── Anthology (user-scoped) ────────────────────────────────────────────────────
 
 export async function getAnthology(limit = 3): Promise<AnthologyItem[]> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
   const { data } = await supabase
     .from('anthology')
     .select('id, text, author, theme')
+    .eq('user_id', user.id)
     .order('id', { ascending: false })
     .limit(limit)
   return data ?? []
 }
 
 export async function getAnthologyCount(): Promise<number> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
   const { count } = await supabase
     .from('anthology')
     .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
   return count ?? 0
 }
 
 export async function addToAnthology(item: Omit<AnthologyItem, 'id'>): Promise<void> {
-  await supabase.from('anthology').insert(item)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase.from('anthology').insert({ ...item, user_id: user.id })
 }
 
 // ── User-scoped (requires auth) ────────────────────────────────────────────────
