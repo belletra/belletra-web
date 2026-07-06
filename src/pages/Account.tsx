@@ -14,7 +14,7 @@ export default function Account() {
   const [uploading, setUploading] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [subPlan, setSubPlan] = useState<string | null>(null)
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
   const [dark, setDark] = useDarkMode()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -31,9 +31,9 @@ export default function Account() {
     })
   }, [])
 
-  async function handleUpgrade(plan: 'year' | 'month' | 'lifetime' = 'year') {
+  async function handleUpgrade(plan: 'year' | 'month' | 'lifetime') {
     if (!userId || checkoutLoading) return
-    setCheckoutLoading(true)
+    setCheckoutLoading(plan)
     try {
       const { data, error } = await supabase.functions.invoke(CHECKOUT_FUNCTION, {
         body: { plan, userId, email },
@@ -41,7 +41,7 @@ export default function Account() {
       if (error || !data?.url) throw error ?? new Error('No checkout URL')
       window.location.href = data.url
     } catch {
-      setCheckoutLoading(false)
+      setCheckoutLoading(null)
     }
   }
 
@@ -130,14 +130,14 @@ export default function Account() {
           </div>
           {!isSubscribed && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button onClick={() => handleUpgrade('month')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
-                Monthly $5.99
+              <button onClick={() => handleUpgrade('month')} disabled={!!checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
+                {checkoutLoading === 'month' ? '…' : 'Monthly $5.99'}
               </button>
-              <button onClick={() => handleUpgrade('year')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--card)', background: checkoutLoading ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'background .2s' }}>
-                {checkoutLoading ? '…' : 'Yearly $39.99'}
+              <button onClick={() => handleUpgrade('year')} disabled={!!checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--card)', background: checkoutLoading ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'background .2s' }}>
+                {checkoutLoading === 'year' ? '…' : 'Yearly $39.99'}
               </button>
-              <button onClick={() => handleUpgrade('lifetime')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
-                Lifetime $129
+              <button onClick={() => handleUpgrade('lifetime')} disabled={!!checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
+                {checkoutLoading === 'lifetime' ? '…' : 'Lifetime $129'}
               </button>
             </div>
           )}
