@@ -31,12 +31,12 @@ export default function Account() {
     })
   }, [])
 
-  async function handleUpgrade() {
+  async function handleUpgrade(plan: 'year' | 'month' | 'lifetime' = 'year') {
     if (!userId || checkoutLoading) return
     setCheckoutLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke(CHECKOUT_FUNCTION, {
-        body: { plan: 'year', userId, email },
+        body: { plan, userId, email },
       })
       if (error || !data?.url) throw error ?? new Error('No checkout URL')
       window.location.href = data.url
@@ -129,13 +129,14 @@ export default function Account() {
             )}
           </div>
           {!isSubscribed && (
-            <button
-              onClick={handleUpgrade}
-              disabled={checkoutLoading || !userId}
-              style={{ font: '600 13.5px var(--sans)', color: 'var(--card)', background: checkoutLoading ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '11px 22px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'background .2s' }}
-            >
-              {checkoutLoading ? '…' : 'Upgrade'}
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button onClick={() => handleUpgrade('year')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--card)', background: checkoutLoading ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'background .2s' }}>
+                {checkoutLoading ? '…' : 'Yearly $39.99'}
+              </button>
+              <button onClick={() => handleUpgrade('lifetime')} disabled={checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
+                Lifetime $129
+              </button>
+            </div>
           )}
         </div>
 

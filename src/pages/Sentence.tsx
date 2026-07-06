@@ -14,9 +14,17 @@ const VALUE_PROPS = [
 ]
 
 function PaywallGate({ userId, email }: { userId: string; email: string }) {
-  const [plan, setPlan] = useState<'year' | 'month'>('year')
+  const [plan, setPlan] = useState<'year' | 'month' | 'lifetime'>('year')
   const [loading, setLoading] = useState(false)
-  const trailing = plan === 'year' ? 'then $9.99 / year' : 'then $1.99 / month'
+
+  const ctaLabel = loading ? 'Opening checkout…'
+    : plan === 'lifetime' ? 'Become a member →'
+    : 'Start 7-day free trial →'
+
+  const ctaNote = plan === 'lifetime'
+    ? 'Pay once. Every language we ever add.'
+    : plan === 'year' ? 'Free for 7 days — then $39.99 / year.'
+    : 'Free for 7 days — then $5.99 / month.'
 
   const startCheckout = async () => {
     if (!userId || loading) return
@@ -32,7 +40,7 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
     }
   }
 
-  const PlanRow = ({ id, title, price, period, note, badge }: { id: 'year'|'month', title: string, price: string, period: string, note: string, badge?: string }) => (
+  const PlanRow = ({ id, title, price, period, note, badge }: { id: 'year'|'month'|'lifetime', title: string, price: string, period: string, note: string, badge?: string }) => (
     <button onClick={() => setPlan(id)} style={{
       width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 14,
       padding: '15px 17px', borderRadius: 14, cursor: 'pointer',
@@ -82,8 +90,9 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
 
       {/* Plans */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11, marginBottom: 18 }}>
-        <PlanRow id="year" title="Yearly" price="$9.99" period="/ year" note="≈ $0.83 / month · 7-day free trial" badge="Best value · saves 58%" />
-        <PlanRow id="month" title="Monthly" price="$1.99" period="/ month" note="7-day free trial" />
+        <PlanRow id="month" title="Monthly" price="$5.99" period="/ month" note="For a season of reading · 7-day free trial" />
+        <PlanRow id="year" title="Yearly" price="$39.99" period="/ year" note="≈ $3.33 / month · 7-day free trial" badge="Best value · save 44%" />
+        <PlanRow id="lifetime" title="Lifetime" price="$129" period="once" note="Every language we ever add" />
       </div>
 
       {/* CTA */}
@@ -92,13 +101,13 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
         disabled={loading}
         style={{ width: '100%', font: '600 15px var(--sans)', color: 'var(--card)', background: (loading || !userId) ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '15px 0', cursor: (loading || !userId) ? 'default' : 'pointer', boxShadow: 'var(--shadow-cta)', marginBottom: 10, transition: 'background .2s' }}
       >
-        {loading ? 'Opening checkout…' : 'Start 7-day free trial →'}
+        {ctaLabel}
       </button>
       <div style={{ font: '400 12px var(--sans)', color: 'var(--faint)', textAlign: 'center', marginBottom: 16 }}>
-        Free for 7 days — {trailing}.
+        {ctaNote}
       </div>
       <div style={{ font: '400 12.5px var(--sans)', color: 'var(--faint)', fontStyle: 'italic', textAlign: 'center' }}>
-        Cancel anytime. Grows with you.
+        {plan === 'lifetime' ? 'No renewals. No surprises.' : 'Cancel anytime. Grows with you.'}
       </div>
     </div>
   )
