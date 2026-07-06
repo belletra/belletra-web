@@ -39,6 +39,15 @@ export default function Login() {
     if (err) setError(err.message)
   }
 
+  async function handleApple() {
+    setError('')
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/app` },
+    })
+    if (err) setError(err.message)
+  }
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 95,
@@ -97,7 +106,7 @@ export default function Login() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button className="auth-btn-outline" type="button" disabled>Continue with Apple</button>
+          <button className="auth-btn-outline" type="button" onClick={handleApple}>Continue with Apple</button>
           <button className="auth-btn-outline" type="button" onClick={handleGoogle}>Continue with Google</button>
         </div>
 
