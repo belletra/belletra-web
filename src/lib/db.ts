@@ -69,6 +69,8 @@ export interface WordQueueItem {
   token: string
   gloss: string
   source_author: string
+  sentence_id: string
+  sentence_text: string
 }
 
 export interface ReadingLogEntry {
@@ -172,43 +174,77 @@ export async function getSentenceFull(id: string): Promise<{
   }
 }
 
-// ── Anthology (global for now; RLS will scope per user when enabled) ────────────
+// ── Anthology (user-scoped) ────────────────────────────────────────────────────
 
 export async function getAnthology(limit = 3): Promise<AnthologyItem[]> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
   const { data } = await supabase
     .from('anthology')
     .select('id, text, author, theme')
+    .eq('user_id', user.id)
     .order('id', { ascending: false })
     .limit(limit)
   return data ?? []
 }
 
 export async function getAnthologyCount(): Promise<number> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
   const { count } = await supabase
     .from('anthology')
     .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
   return count ?? 0
 }
 
 export async function addToAnthology(item: Omit<AnthologyItem, 'id'>): Promise<void> {
-  await supabase.from('anthology').insert(item)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { error } = await supabase.from('anthology').insert({ ...item, user_id: user.id })
+  if (error) throw error
 }
 
 // ── User-scoped (requires auth) ────────────────────────────────────────────────
+
+export async function addWordsToQueue(
+  sentenceId: string,
+  words: Array<{ token: string; gloss: string | null }>,
+  author: string,
+): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  const rows = words
+    .filter(w => w.gloss)
+    .map(w => ({
+      user_id: user.id,
+      sentence_id: sentenceId,
+      token: w.token,
+      gloss: w.gloss,
+      source_author: author,
+    }))
+  if (rows.length === 0) return
+  await supabase.from('user_word_queue').upsert(rows, { onConflict: 'user_id,sentence_id,token', ignoreDuplicates: true })
+}
 
 export async function getWordQueue(): Promise<WordQueueItem[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
   const { data } = await supabase
     .from('user_word_queue')
-    .select('token, gloss, source_author')
+    .select('token, gloss, source_author, sentence_id, sentences(text)')
     .eq('user_id', user.id)
     .order('added_at', { ascending: false })
     .limit(40)
   if (!data || data.length === 0) return []
-  // Shuffle and return top 20
   const shuffled = [...data].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, 20)
+  return shuffled.slice(0, 20).map((r: any) => ({
+    token: r.token,
+    gloss: r.gloss,
+    source_author: r.source_author,
+    sentence_id: r.sentence_id,
+    sentence_text: r.sentences?.text ?? '',
+  }))
 }
 
 export async function getReadingLog(): Promise<ReadingLogEntry[]> {

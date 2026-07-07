@@ -118,7 +118,7 @@ export default function Account() {
           <div>
             {isSubscribed ? (
               <>
-                <div className="serif" style={{ fontSize: 19, color: 'var(--ink)' }}>Belletra · {subPlan === 'year' ? 'Yearly' : 'Monthly'}</div>
+                <div className="serif" style={{ fontSize: 19, color: 'var(--ink)' }}>Belletra · {subPlan === 'year' ? 'Yearly' : subPlan === 'lifetime' ? 'Lifetime' : 'Monthly'}</div>
                 <div style={{ font: '400 13px var(--sans)', color: 'var(--soft)', marginTop: 3 }}>Active subscription</div>
               </>
             ) : (
@@ -140,6 +140,11 @@ export default function Account() {
                 {checkoutLoading === 'lifetime' ? '…' : 'Lifetime $129'}
               </button>
             </div>
+          )}
+          {isSubscribed && subPlan !== 'lifetime' && (
+            <button onClick={() => handleUpgrade('lifetime')} disabled={!!checkoutLoading || !userId} style={{ font: '600 12.5px var(--sans)', color: 'var(--gold)', background: 'transparent', border: '1px solid var(--gold)', borderRadius: 999, padding: '10px 18px', cursor: checkoutLoading ? 'default' : 'pointer', transition: 'all .2s' }}>
+              {checkoutLoading === 'lifetime' ? '…' : 'Upgrade to Lifetime $129'}
+            </button>
           )}
         </div>
 

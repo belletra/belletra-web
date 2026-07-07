@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { AppNav } from '../components/AppNav'
-import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
+import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, logReading, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { CHECKOUT_FUNCTION } from '../lib/functions'
 
@@ -264,7 +264,7 @@ export default function Sentence() {
       if (isLocked) {
         getSentencePreview(id).then(p => { setPreview(p); setLoading(false) })
       } else {
-        getSentenceFull(id).then(d => { setData(d); setLoading(false) })
+        getSentenceFull(id).then(d => { setData(d); setLoading(false); logReading(id) })
       }
     })
   }, [id])
@@ -274,12 +274,17 @@ export default function Sentence() {
 
   const handleKeep = async () => {
     if (!data || kept) return
+    const [anthErr, wordsErr] = await Promise.all([
+      addToAnthology({
+        text: data.sentence.text,
+        author: data.sentence.author,
+        theme: data.sentence.feature ?? '',
+      }).then(() => null).catch(e => e),
+      addWordsToQueue(data.sentence.id, data.words, data.sentence.author).then(() => null).catch(e => e),
+    ])
+    if (anthErr) { console.error('anthology insert failed:', anthErr); return }
+    if (wordsErr) console.warn('word queue insert failed:', wordsErr)
     setKept(true)
-    await addToAnthology({
-      text: data.sentence.text,
-      author: data.sentence.author,
-      theme: data.sentence.feature ?? '',
-    })
   }
 
   if (loading) return (
