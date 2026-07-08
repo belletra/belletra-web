@@ -240,36 +240,37 @@ export default function Dashboard() {
         <section style={{ marginTop: 'clamp(40px,6vw,72px)' }}>
           <h2 className="serif" style={{ fontWeight: 400, fontSize: 'clamp(24px,3vw,32px)', margin: '0 0 6px' }}>Your progress</h2>
           <p style={{ font: '400 14.5px var(--sans)', color: 'var(--soft)', margin: '0 0 26px' }}>The quiet proof that it's working.</p>
-          <div className="dash-progress" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px,1fr))', gap: 18, alignItems: 'start' }}>
+          {/* Words to bring back — own row, natural height */}
+          <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, boxShadow: 'var(--shadow-card)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Words to bring back</div>
+            {wordQueue.length === 0 ? (
+              <div style={{ flex: 1, font: '400 13.5px/1.65 var(--sans)', color: 'var(--faint)', fontStyle: 'italic' }}>No words queued yet — keep a line to add words.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 13, flex: 1 }}>
+                {wordQueue.slice(0, 4).map(w => (
+                  <div key={w.token} style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                    <span className="serif" style={{ fontSize: 17, color: 'var(--ink)' }}>{w.token}</span>
+                    <span style={{ font: '400 12.5px var(--sans)', color: 'var(--faint)' }}>{w.gloss}</span>
+                  </div>
+                ))}
+                {wordQueue.length > 4 && <div style={{ font: '400 12px var(--sans)', color: 'var(--faint)' }}>+{wordQueue.length - 4} more</div>}
+              </div>
+            )}
+            {wordQueue.length > 0 && (
+              <Link to="/app/review" className="dash-review-btn" style={{
+                marginTop: 20, font: '600 13.5px var(--sans)', color: 'var(--ink)',
+                background: 'transparent', border: '1px solid var(--ink)', borderRadius: 999,
+                padding: 11, cursor: 'pointer', textDecoration: 'none', textAlign: 'center',
+                transition: 'background .18s, color .18s', display: 'block',
+              }}>Review {wordQueue.length} word{wordQueue.length !== 1 ? 's' : ''} · 2 min</Link>
+            )}
+          </div>
 
-            {/* Words to bring back */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, boxShadow: 'var(--shadow-card)', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Words to bring back</div>
-              {wordQueue.length === 0 ? (
-                <div style={{ flex: 1, font: '400 13.5px/1.65 var(--sans)', color: 'var(--faint)', fontStyle: 'italic' }}>No words queued yet — keep a line to add words.</div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 13, flex: 1 }}>
-                  {wordQueue.slice(0, 4).map(w => (
-                    <div key={w.token} style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                      <span className="serif" style={{ fontSize: 17, color: 'var(--ink)' }}>{w.token}</span>
-                      <span style={{ font: '400 12.5px var(--sans)', color: 'var(--faint)' }}>{w.gloss}</span>
-                    </div>
-                  ))}
-                  {wordQueue.length > 4 && <div style={{ font: '400 12px var(--sans)', color: 'var(--faint)' }}>+{wordQueue.length - 4} more</div>}
-                </div>
-              )}
-              {wordQueue.length > 0 && (
-                <Link to="/app/review" className="dash-review-btn" style={{
-                  marginTop: 20, font: '600 13.5px var(--sans)', color: 'var(--ink)',
-                  background: 'transparent', border: '1px solid var(--ink)', borderRadius: 999,
-                  padding: 11, cursor: 'pointer', textDecoration: 'none', textAlign: 'center',
-                  transition: 'background .18s, color .18s', display: 'block',
-                }}>Review {wordQueue.length} word{wordQueue.length !== 1 ? 's' : ''} · 2 min</Link>
-              )}
-            </div>
+          {/* 3 stat cards — own flex row so they all match each other's height */}
+          <div className="dash-progress" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginTop: 18 }}>
 
             {/* Streak */}
-            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26 }}>
+            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, display: 'flex', flexDirection: 'column' }}>
               <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 14 }}>Reading streak</div>
               <div className="serif" style={{ fontSize: 34, color: 'var(--ink)' }}>
                 {rhythm.filter(d => d.status === 'done').length}
@@ -280,19 +281,19 @@ export default function Dashboard() {
             </div>
 
             {/* Anthology count */}
-            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26 }}>
+            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, display: 'flex', flexDirection: 'column' }}>
               <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 14 }}>Your anthology</div>
               <div className="serif" style={{ fontSize: 34, color: 'var(--ink)' }}>{anthologyCount}</div>
               <div style={{ font: '400 13px var(--sans)', color: 'var(--soft)', marginTop: 4 }}>line{anthologyCount !== 1 ? 's' : ''} kept</div>
             </div>
 
             {/* Library count */}
-            <Link to="/app/library" style={{ textDecoration: 'none' }}>
-            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, cursor: 'pointer', transition: 'border-color .2s' }} className="dash-lib-card">
+            <Link to="/app/library" style={{ textDecoration: 'none', display: 'flex' }}>
+            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, cursor: 'pointer', transition: 'border-color .2s', display: 'flex', flexDirection: 'column', flex: 1 }} className="dash-lib-card">
               <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 14 }}>The library</div>
               <div className="serif" style={{ fontSize: 34, color: 'var(--gold)' }}>{libraryCount}</div>
               <div style={{ font: '400 13px var(--sans)', color: 'var(--soft)', marginTop: 4 }}>sentences in the canon so far</div>
-              <div style={{ font: '500 13px var(--sans)', color: 'var(--gold)', marginTop: 14 }}>Browse all →</div>
+              <div style={{ font: '500 13px var(--sans)', color: 'var(--gold)', marginTop: 'auto', paddingTop: 14 }}>Browse all →</div>
             </div>
             </Link>
           </div>
