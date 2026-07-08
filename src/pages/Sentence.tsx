@@ -452,17 +452,17 @@ export default function Sentence() {
                   ✓ kept in your anthology
                 </div>
               )}
+              <button
+                onClick={async () => {
+                  if (!id) return
+                  if (done) { await unmarkDone(id); setDone(false) }
+                  else { await markDone(id); setDone(true) }
+                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: '500 14px var(--sans)', color: done ? 'var(--gold)' : 'var(--soft)', background: done ? 'var(--goldBg)' : 'transparent', border: `1px solid ${done ? 'var(--gold)' : 'var(--line2)'}`, borderRadius: 999, padding: '11px 22px', cursor: 'pointer', transition: 'all .18s' }}
+              >
+                {done ? '✓ Done' : 'Mark as done'}
+              </button>
             </div>
-            <button
-              onClick={async () => {
-                if (!id) return
-                if (done) { await unmarkDone(id); setDone(false) }
-                else { await markDone(id); setDone(true) }
-              }}
-              style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 8, font: '500 14px var(--sans)', color: done ? 'var(--gold)' : 'var(--soft)', background: done ? 'var(--goldBg)' : 'transparent', border: `1px solid ${done ? 'var(--gold)' : 'var(--line2)'}`, borderRadius: 999, padding: '11px 22px', cursor: 'pointer', transition: 'all .18s' }}
-            >
-              {done ? '✓ Done' : 'Mark as done'}
-            </button>
             {sentence.plain_register && (
               <div style={{ marginTop: 28, padding: '16px 20px', background: 'var(--goldBg)', borderRadius: 14 }}>
                 <div style={{ font: '600 10px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Useful vs beautiful</div>
