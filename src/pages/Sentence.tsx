@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { AppNav } from '../components/AppNav'
-import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, logReading, getSubscriptionStatus, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
+import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, logReading, getSubscriptionStatus, markDone, unmarkDone, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { CHECKOUT_FUNCTION } from '../lib/functions'
 
@@ -245,6 +245,7 @@ export default function Sentence() {
   const [locked, setLocked] = useState(false)
   const [loading, setLoading] = useState(true)
   const [kept, setKept] = useState(false)
+  const [done, setDone] = useState(false)
   const [selectedToken, setSelectedToken] = useState<string | null>(null)
   const [userId, setUserId] = useState('')
   const [userEmail, setUserEmail] = useState('')
@@ -438,7 +439,7 @@ export default function Sentence() {
                 {sentence.translation}
               </div>
             )}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               <button onClick={() => audio.play(fullText)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: '500 14px var(--sans)', color: audio.playing ? 'var(--gold)' : 'var(--soft)', background: 'transparent', border: `1px solid ${audio.playing ? 'var(--gold)' : 'var(--line2)'}`, borderRadius: 999, padding: '11px 22px', cursor: 'pointer', transition: 'color .18s, border-color .18s' }}>
                 {audio.playing ? <><span>♪</span> listening…</> : <><span>▶</span> Hear it</>}
               </button>
@@ -452,6 +453,16 @@ export default function Sentence() {
                 </div>
               )}
             </div>
+            <button
+              onClick={async () => {
+                if (!id) return
+                if (done) { await unmarkDone(id); setDone(false) }
+                else { await markDone(id); setDone(true) }
+              }}
+              style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 8, font: '500 14px var(--sans)', color: done ? 'var(--gold)' : 'var(--soft)', background: done ? 'var(--goldBg)' : 'transparent', border: `1px solid ${done ? 'var(--gold)' : 'var(--line2)'}`, borderRadius: 999, padding: '11px 22px', cursor: 'pointer', transition: 'all .18s' }}
+            >
+              {done ? '✓ Done' : 'Mark as done'}
+            </button>
             {sentence.plain_register && (
               <div style={{ marginTop: 28, padding: '16px 20px', background: 'var(--goldBg)', borderRadius: 14 }}>
                 <div style={{ font: '600 10px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Useful vs beautiful</div>
