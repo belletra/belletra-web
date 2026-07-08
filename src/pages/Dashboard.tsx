@@ -249,13 +249,13 @@ export default function Dashboard() {
                 <div style={{ font: '400 13.5px/1.65 var(--sans)', color: 'var(--faint)', fontStyle: 'italic' }}>No words queued yet — keep a line to add words.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-                  {wordQueue.slice(0, 4).map(w => (
-                    <div key={w.token} style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                      <span className="serif" style={{ fontSize: 17, color: 'var(--ink)' }}>{w.token}</span>
-                      <span style={{ font: '400 12.5px var(--sans)', color: 'var(--faint)' }}>{w.gloss}</span>
+                  {wordQueue.slice(0, 2).map(w => (
+                    <div key={w.token} style={{ display: 'flex', alignItems: 'baseline', gap: 10, overflow: 'hidden' }}>
+                      <span className="serif" style={{ fontSize: 17, color: 'var(--ink)', flexShrink: 0 }}>{w.token}</span>
+                      <span style={{ font: '400 12.5px var(--sans)', color: 'var(--faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.gloss}</span>
                     </div>
                   ))}
-                  {wordQueue.length > 4 && <div style={{ font: '400 12px var(--sans)', color: 'var(--faint)' }}>+{wordQueue.length - 4} more</div>}
+                  {wordQueue.length > 2 && <div style={{ font: '400 12px var(--sans)', color: 'var(--faint)' }}>+{wordQueue.length - 2} more</div>}
                 </div>
               )}
               {wordQueue.length > 0 && (
