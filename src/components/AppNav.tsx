@@ -14,6 +14,7 @@ export function AppNav({ active = 'today', initials = 'B', avatarUrl }: AppNavPr
   const links = [
     { to: '/app', label: 'Today', key: 'today' },
     { to: '/app/library', label: 'Library', key: 'library' },
+    { to: '/app/anthology', label: 'Anthology', key: 'anthology' },
     { to: '/app/review', label: 'Review', key: 'review' },
   ]
 
