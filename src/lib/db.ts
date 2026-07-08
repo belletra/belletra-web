@@ -90,7 +90,8 @@ export async function getTodaySentence(): Promise<Sentence | null> {
   const { data: all } = await supabase
     .from('sentences')
     .select('id')
-    .in('status', ['published', 'queued'])
+    .eq('status', 'published')
+    .eq('human_verified', true)
   if (!all || all.length === 0) return null
 
   const idx = seed % all.length
@@ -113,7 +114,8 @@ export async function getTomorrowSentence(): Promise<Pick<Sentence,'id'|'text'|'
   const { data: all } = await supabase
     .from('sentences')
     .select('id')
-    .in('status', ['published', 'queued'])
+    .eq('status', 'published')
+    .eq('human_verified', true)
   if (!all || all.length === 0) return null
 
   const idx = seed % all.length
