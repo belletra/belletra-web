@@ -143,6 +143,7 @@ export async function getAllSentences(): Promise<SentenceCard[]> {
     .from('sentences')
     .select('id, text, author, cefr, feature, status, ord')
     .eq('status', 'published')
+    .eq('human_verified', true)
     .order('ord', { ascending: true })
     .limit(10000)
   return data ?? []
