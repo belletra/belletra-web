@@ -240,7 +240,7 @@ export default function Dashboard() {
         <section style={{ marginTop: 'clamp(40px,6vw,72px)' }}>
           <h2 className="serif" style={{ fontWeight: 400, fontSize: 'clamp(24px,3vw,32px)', margin: '0 0 6px' }}>Your progress</h2>
           <p style={{ font: '400 14.5px var(--sans)', color: 'var(--soft)', margin: '0 0 26px' }}>The quiet proof that it's working.</p>
-          <div className="dash-progress" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px,1fr))', gap: 18 }}>
+          <div className="dash-progress" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px,1fr))', gap: 18, alignItems: 'start' }}>
 
             {/* Words to bring back */}
             <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, boxShadow: 'var(--shadow-card)', display: 'flex', flexDirection: 'column' }}>
