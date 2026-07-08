@@ -311,7 +311,7 @@ export default function Dashboard() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: 18 }}>
             {anthology.map(a => (
-              <Link key={a.id} to="/app/anthology" className="dash-anth-card" style={{
+              <Link key={a.id} to={a.sentence_id ? `/app/sentence/${a.sentence_id}` : '/app/anthology'} className="dash-anth-card" style={{
                 background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 18,
                 padding: '26px 28px', boxShadow: 'var(--shadow-card)', display: 'block', textDecoration: 'none',
               }}>

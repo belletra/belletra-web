@@ -63,6 +63,7 @@ export interface AnthologyItem {
   text: string
   author: string
   theme: string
+  sentence_id?: string | null
 }
 
 export interface WordQueueItem {
@@ -208,7 +209,7 @@ export async function getAnthology(limit = 3): Promise<AnthologyItem[]> {
   if (!user) return []
   const { data } = await supabase
     .from('anthology')
-    .select('id, text, author, theme')
+    .select('id, text, author, theme, sentence_id')
     .eq('user_id', user.id)
     .order('id', { ascending: false })
     .limit(limit)
