@@ -123,11 +123,10 @@ export interface SentenceCard {
 }
 
 export async function getAllSentences(): Promise<SentenceCard[]> {
-  const today = new Date().toISOString().slice(0, 10)
   const { data } = await supabase
     .from('sentences')
     .select('id, text, author, cefr, feature, status, ord')
-    .or(`status.eq.published,and(status.eq.queued,date_published.lte.${today})`)
+    .in('status', ['published', 'queued'])
     .order('ord', { ascending: true })
   return data ?? []
 }
