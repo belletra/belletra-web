@@ -142,7 +142,7 @@ export async function getAllSentences(): Promise<SentenceCard[]> {
   const { data } = await supabase
     .from('sentences')
     .select('id, text, author, cefr, feature, status, ord')
-    .in('status', ['published', 'queued'])
+    .eq('status', 'published')
     .order('ord', { ascending: true })
   return data ?? []
 }
