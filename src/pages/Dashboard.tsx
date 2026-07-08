@@ -287,11 +287,14 @@ export default function Dashboard() {
             </div>
 
             {/* Library count */}
-            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26 }}>
+            <Link to="/app/library" style={{ textDecoration: 'none' }}>
+            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, cursor: 'pointer', transition: 'border-color .2s' }} className="dash-lib-card">
               <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 14 }}>The library</div>
               <div className="serif" style={{ fontSize: 34, color: 'var(--gold)' }}>{libraryCount}</div>
               <div style={{ font: '400 13px var(--sans)', color: 'var(--soft)', marginTop: 4 }}>sentences in the canon so far</div>
+              <div style={{ font: '500 13px var(--sans)', color: 'var(--gold)', marginTop: 14 }}>Browse all →</div>
             </div>
+            </Link>
           </div>
         </section>
 
@@ -303,13 +306,11 @@ export default function Dashboard() {
               <h2 className="serif" style={{ fontWeight: 400, fontSize: 'clamp(24px,3vw,32px)', margin: '0 0 6px' }}>Your anthology</h2>
               <p style={{ font: '400 14.5px var(--sans)', color: 'var(--soft)', margin: 0 }}>The lines you've kept — gilded, and yours.</p>
             </div>
-            {anthologyCount > 3 && (
-              <Link to="/app/library" style={{ font: '500 13.5px var(--sans)', color: 'var(--gold)', textDecoration: 'none' }}>See all {anthologyCount} →</Link>
-            )}
+            <Link to="/app/anthology" style={{ font: '500 13.5px var(--sans)', color: 'var(--gold)', textDecoration: 'none' }}>See all {anthologyCount} →</Link>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px,1fr))', gap: 18 }}>
             {anthology.map(a => (
-              <Link key={a.id} to="/app/library" className="dash-anth-card" style={{
+              <Link key={a.id} to="/app/anthology" className="dash-anth-card" style={{
                 background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 18,
                 padding: '26px 28px', boxShadow: 'var(--shadow-card)', display: 'block', textDecoration: 'none',
               }}>

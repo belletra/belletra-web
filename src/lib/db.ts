@@ -83,10 +83,13 @@ export interface ReadingLogEntry {
 const SENTENCE_DISPLAY = 'id, text, lines, teaser, audio, author, work, year, cefr, feature, status, translation, plain_register, ord'
 
 export async function getTodaySentence(): Promise<Sentence | null> {
+  await supabase.rpc('rotate_daily_sentence').then(() => {}, () => {})
+  const today = new Date().toISOString().slice(0, 10)
   const { data } = await supabase
     .from('sentences')
     .select(SENTENCE_DISPLAY)
     .eq('status', 'published')
+    .eq('date_published', today)
     .order('ord', { ascending: true })
     .limit(1)
     .single()
@@ -94,10 +97,14 @@ export async function getTodaySentence(): Promise<Sentence | null> {
 }
 
 export async function getTomorrowSentence(): Promise<Pick<Sentence,'id'|'text'|'teaser'|'author'|'ord'|'status'> | null> {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStr = tomorrow.toISOString().slice(0, 10)
   const { data } = await supabase
     .from('sentences')
     .select('id, text, teaser, author, ord, status')
     .eq('status', 'queued')
+    .eq('date_published', tomorrowStr)
     .order('ord', { ascending: true })
     .limit(1)
     .single()
@@ -116,10 +123,11 @@ export interface SentenceCard {
 }
 
 export async function getAllSentences(): Promise<SentenceCard[]> {
+  const today = new Date().toISOString().slice(0, 10)
   const { data } = await supabase
     .from('sentences')
     .select('id, text, author, cefr, feature, status, ord')
-    .eq('status', 'published')
+    .or(`status.eq.published,and(status.eq.queued,date_published.lte.${today})`)
     .order('ord', { ascending: true })
   return data ?? []
 }
@@ -203,6 +211,30 @@ export async function addToAnthology(item: Omit<AnthologyItem, 'id'>): Promise<v
   if (!user) throw new Error('Not authenticated')
   const { error } = await supabase.from('anthology').insert({ ...item, user_id: user.id })
   if (error) throw error
+}
+
+// ── Done / reads ──────────────────────────────────────────────────────────────
+
+export async function getReadSentenceIds(): Promise<Set<string>> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return new Set()
+  const { data } = await supabase
+    .from('sentence_reads')
+    .select('sentence_id')
+    .eq('user_id', user.id)
+  return new Set((data ?? []).map((r: any) => r.sentence_id))
+}
+
+export async function markDone(sentenceId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase.from('sentence_reads').upsert({ user_id: user.id, sentence_id: sentenceId }, { onConflict: 'user_id,sentence_id', ignoreDuplicates: true })
+}
+
+export async function unmarkDone(sentenceId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase.from('sentence_reads').delete().eq('user_id', user.id).eq('sentence_id', sentenceId)
 }
 
 // ── User-scoped (requires auth) ────────────────────────────────────────────────
