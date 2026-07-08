@@ -32,7 +32,26 @@ export default function Anthology() {
           .eq('user_id', user.id)
           .order('id', { ascending: false })
         if (err) throw err
-        setItems((data ?? []) as AnthologyEntry[])
+        const rows = (data ?? []) as AnthologyEntry[]
+
+        // Backfill sentence_id for old entries that don't have it
+        const missing = rows.filter(r => !r.sentence_id)
+        if (missing.length > 0) {
+          const { data: matches } = await supabase
+            .from('sentences')
+            .select('id, text')
+            .in('text', missing.map(r => r.text))
+          if (matches) {
+            const textToId = Object.fromEntries(matches.map((m: { id: string; text: string }) => [m.text, m.id]))
+            await Promise.all(missing.map(r => {
+              const sid = textToId[r.text]
+              if (sid) return supabase.from('anthology').update({ sentence_id: sid }).eq('id', r.id)
+            }).filter(Boolean))
+            rows.forEach(r => { if (!r.sentence_id && textToId[r.text]) r.sentence_id = textToId[r.text] })
+          }
+        }
+
+        setItems(rows)
       } catch (e: any) {
         setError(e?.message ?? 'Unknown error')
       } finally {

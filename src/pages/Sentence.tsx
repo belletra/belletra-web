@@ -280,6 +280,7 @@ export default function Sentence() {
         text: data.sentence.text,
         author: data.sentence.author,
         theme: data.sentence.feature ?? '',
+        sentence_id: data.sentence.id,
       }).then(() => null).catch(e => e),
       addWordsToQueue(data.sentence.id, data.words, data.sentence.author).then(() => null).catch(e => e),
     ])
