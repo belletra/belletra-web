@@ -269,8 +269,8 @@ export default function Dashboard() {
             </div>
 
             {/* Streak */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, boxShadow: 'var(--shadow-card)' }}>
-              <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Reading streak</div>
+            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26 }}>
+              <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 16 }}>Reading streak</div>
               <div className="serif" style={{ fontSize: 46, color: 'var(--ink)' }}>
                 {rhythm.filter(d => d.status === 'done').length}
               </div>
@@ -280,8 +280,8 @@ export default function Dashboard() {
             </div>
 
             {/* Anthology count */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 20, padding: 26, boxShadow: 'var(--shadow-card)' }}>
-              <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Your anthology</div>
+            <div style={{ background: 'var(--paper2)', border: '1px solid var(--line)', borderRadius: 20, padding: 26 }}>
+              <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 16 }}>Your anthology</div>
               <div className="serif" style={{ fontSize: 46, color: 'var(--ink)' }}>{anthologyCount}</div>
               <div style={{ font: '400 13px var(--sans)', color: 'var(--soft)', marginTop: 4 }}>line{anthologyCount !== 1 ? 's' : ''} kept</div>
             </div>
