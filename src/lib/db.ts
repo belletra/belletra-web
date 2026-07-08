@@ -83,15 +83,23 @@ export interface ReadingLogEntry {
 const SENTENCE_DISPLAY = 'id, text, lines, teaser, audio, author, work, year, cefr, feature, status, translation, plain_register, ord'
 
 export async function getTodaySentence(): Promise<Sentence | null> {
-  await supabase.rpc('rotate_daily_sentence').then(() => {}, () => {})
+  // Seed with today's date so every user gets the same sentence each day
   const today = new Date().toISOString().slice(0, 10)
+  const seed = today.split('-').reduce((acc, n) => acc * 100 + parseInt(n), 0)
+
+  const { data: all } = await supabase
+    .from('sentences')
+    .select('id')
+    .in('status', ['published', 'queued'])
+  if (!all || all.length === 0) return null
+
+  const idx = seed % all.length
+  const chosenId = all[idx].id
+
   const { data } = await supabase
     .from('sentences')
     .select(SENTENCE_DISPLAY)
-    .eq('status', 'published')
-    .eq('date_published', today)
-    .order('ord', { ascending: true })
-    .limit(1)
+    .eq('id', chosenId)
     .single()
   return data
 }
@@ -100,13 +108,21 @@ export async function getTomorrowSentence(): Promise<Pick<Sentence,'id'|'text'|'
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowStr = tomorrow.toISOString().slice(0, 10)
+  const seed = tomorrowStr.split('-').reduce((acc, n) => acc * 100 + parseInt(n), 0)
+
+  const { data: all } = await supabase
+    .from('sentences')
+    .select('id')
+    .in('status', ['published', 'queued'])
+  if (!all || all.length === 0) return null
+
+  const idx = seed % all.length
+  const chosenId = all[idx].id
+
   const { data } = await supabase
     .from('sentences')
     .select('id, text, teaser, author, ord, status')
-    .eq('status', 'queued')
-    .eq('date_published', tomorrowStr)
-    .order('ord', { ascending: true })
-    .limit(1)
+    .eq('id', chosenId)
     .single()
   return data
 }
