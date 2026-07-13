@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const HOOK_SECRET = Deno.env.get('SEND_EMAIL_HOOK_SECRET')
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? 'https://lnxwunwkuikqwpqvwckf.supabase.co'
 const FROM = 'Belletra <noreply@belletra.app>'
 const APP_URL = 'https://belletra.app'
 
@@ -245,8 +246,12 @@ serve(async (req) => {
     const email = user?.email ?? body.email
     const actionType = emailData?.email_action_type ?? body.type
 
-    // Use the confirmation_url Supabase provides — it's already the correct full URL
-    const confirmUrl = emailData?.confirmation_url ?? body.data?.url ?? APP_URL
+    // Build URL from token_hash — site_url from Supabase already contains /auth/v1 so we use SUPABASE_URL
+    const tokenHash = emailData?.token_hash
+    const redirectTo = emailData?.redirect_to ?? APP_URL
+    const confirmUrl = tokenHash
+      ? `${SUPABASE_URL}/auth/v1/verify?token=${tokenHash}&type=${actionType}&redirect_to=${redirectTo}`
+      : emailData?.confirmation_url ?? body.data?.url ?? APP_URL
 
     let subject = ''
     let html = ''
