@@ -245,14 +245,8 @@ serve(async (req) => {
     const email = user?.email ?? body.email
     const actionType = emailData?.email_action_type ?? body.type
 
-    // Build the confirmation URL from token_hash
-    const siteUrl = emailData?.site_url ?? APP_URL
-    const tokenHash = emailData?.token_hash
-    const redirectTo = emailData?.redirect_to ?? APP_URL
-
-    const confirmUrl = tokenHash
-      ? `${siteUrl}/auth/v1/verify?token=${tokenHash}&type=${actionType}&redirect_to=${redirectTo}`
-      : emailData?.confirmation_url ?? body.data?.url ?? APP_URL
+    // Use the confirmation_url Supabase provides — it's already the correct full URL
+    const confirmUrl = emailData?.confirmation_url ?? body.data?.url ?? APP_URL
 
     let subject = ''
     let html = ''
