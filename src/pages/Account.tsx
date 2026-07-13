@@ -17,8 +17,21 @@ export default function Account() {
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
   const [dark, setDark] = useDarkMode()
   const fileRef = useRef<HTMLInputElement>(null)
+  const [isRecovery, setIsRecovery] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [pwError, setPwError] = useState('')
+  const [pwLoading, setPwLoading] = useState(false)
+  const [pwDone, setPwDone] = useState(false)
 
   useEffect(() => {
+    // Detect password recovery session from URL hash
+    const hash = window.location.hash
+    if (hash.includes('type=recovery')) {
+      setIsRecovery(true)
+      // Clear the hash so it doesn't persist on refresh
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return
       setEmail(data.user.email ?? '')
@@ -30,6 +43,18 @@ export default function Account() {
       setSubPlan(plan)
     })
   }, [])
+
+  async function handleSetPassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword.length < 8) { setPwError('Password must be at least 8 characters.'); return }
+    setPwError('')
+    setPwLoading(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    setPwLoading(false)
+    if (error) { setPwError(error.message); return }
+    setPwDone(true)
+    setIsRecovery(false)
+  }
 
   async function handleUpgrade(plan: 'year' | 'month' | 'lifetime') {
     if (!userId || checkoutLoading) return
@@ -76,6 +101,37 @@ export default function Account() {
   }
 
   const initials = email ? email[0].toUpperCase() : 'B'
+
+  if (isRecovery || pwDone) {
+    return (
+      <div style={{ background: 'var(--paper)', color: 'var(--ink)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
+        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+          <div className="serif" style={{ fontSize: 24, marginBottom: 24 }}>{pwDone ? 'Password updated' : 'Set a new password'}</div>
+          {pwDone ? (
+            <>
+              <p style={{ font: '400 15px/1.7 var(--sans)', color: 'var(--soft)', marginBottom: 28 }}>Your password has been changed. You can now sign in.</p>
+              <button onClick={() => navigate('/app')} style={{ font: '600 14px var(--sans)', color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer' }}>Go to app →</button>
+            </>
+          ) : (
+            <form onSubmit={handleSetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left' }}>
+              <label style={{ display: 'block' }}>
+                <span style={{ font: '600 11px var(--sans)', letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--faint)', display: 'block', marginBottom: 6 }}>New password</span>
+                <input
+                  type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                  placeholder="••••••••" minLength={8} required autoFocus
+                  style={{ width: '100%', padding: '13px 15px', border: '1px solid var(--line2)', borderRadius: 10, font: '400 15px var(--sans)', background: 'var(--card)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </label>
+              {pwError && <p style={{ font: '400 13px var(--sans)', color: 'var(--rose)', margin: 0 }}>{pwError}</p>}
+              <button type="submit" disabled={pwLoading} style={{ padding: '15px', border: 'none', borderRadius: 999, font: '600 15px var(--sans)', background: 'var(--ink)', color: 'var(--card)', cursor: 'pointer' }}>
+                {pwLoading ? 'Saving…' : 'Set password →'}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ background: 'var(--paper)', color: 'var(--ink)', minHeight: '100vh', transition: 'background .5s cubic-bezier(.2,.7,.2,1), color .5s cubic-bezier(.2,.7,.2,1)' }}>
