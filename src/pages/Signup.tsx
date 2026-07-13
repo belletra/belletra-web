@@ -20,6 +20,11 @@ export default function Signup() {
     if (err) { setError(err.message); return }
     // If session is immediately available, email auto-confirm is on — go to app
     if (data.session) { navigate('/app'); return }
+    // Supabase returns a fake user with no identities when the email is already registered
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      setError('An account with this email already exists. Try signing in instead.')
+      return
+    }
     // Otherwise email confirmation is required — show the check-email screen
     setConfirmed(true)
   }
