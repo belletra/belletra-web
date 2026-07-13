@@ -24,13 +24,10 @@ export default function Account() {
   const [pwDone, setPwDone] = useState(false)
 
   useEffect(() => {
-    // Detect password recovery session from URL hash
-    const hash = window.location.hash
-    if (hash.includes('type=recovery')) {
-      setIsRecovery(true)
-      // Clear the hash so it doesn't persist on refresh
-      window.history.replaceState(null, '', window.location.pathname)
-    }
+    // Detect password recovery — Supabase fires PASSWORD_RECOVERY on auth state change
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setIsRecovery(true)
+    })
 
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return
@@ -42,6 +39,8 @@ export default function Account() {
       setIsSubscribed(isSubscribed)
       setSubPlan(plan)
     })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   async function handleSetPassword(e: React.FormEvent) {
