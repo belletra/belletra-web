@@ -10,6 +10,7 @@ import Library from './pages/Library'
 import Sentence from './pages/Sentence'
 import Review from './pages/Review'
 import Account from './pages/Account'
+import ResetPassword from './pages/ResetPassword'
 import Anthology from './pages/Anthology'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
@@ -28,7 +29,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(data.session)
       setLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.href = '/reset-password'
+        return
+      }
       setSession(s)
       setLoading(false)
     })
@@ -71,6 +76,7 @@ export default function App() {
           <Route path="/app/anthology" element={<ProtectedRoute><Anthology /></ProtectedRoute>} />
           <Route path="/app/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
           <Route path="/app/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
         </Routes>

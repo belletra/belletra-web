@@ -15,7 +15,7 @@ export default function Login() {
     if (!email) { setError('Enter your email address above first.'); return }
     setError('')
     await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/app/account`,
+      redirectTo: `${window.location.origin}/reset-password`,
     })
     setResetSent(true)
   }
