@@ -56,7 +56,7 @@ export default function Support() {
                 },
                 {
                   q: 'What languages does Belletra support?',
-                  a: 'French is available now. Italian, Spanish, and German are coming soon.',
+                  a: 'French, Japanese, German, and Spanish are available now. Italian and Latin are coming soon.',
                 },
                 {
                   q: 'How do I request a refund?',

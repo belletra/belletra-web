@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { AppNav } from '../components/AppNav'
+import { getUserLanguage } from '../lib/db'
 
 interface AnthologyEntry {
   id: number
@@ -51,7 +52,15 @@ export default function Anthology() {
           }
         }
 
-        setItems(rows)
+        // Only show entries whose sentence is in the reader's current language
+        const language = await getUserLanguage()
+        const { data: langSentences } = await supabase
+          .from('sentences')
+          .select('id')
+          .eq('language', language)
+        const langIds = new Set((langSentences ?? []).map((s: { id: string }) => s.id))
+
+        setItems(rows.filter(r => r.sentence_id && langIds.has(r.sentence_id)))
       } catch (e: any) {
         setError(e?.message ?? 'Unknown error')
       } finally {

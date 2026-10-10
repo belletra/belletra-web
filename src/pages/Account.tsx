@@ -5,6 +5,7 @@ import { getSubscriptionStatus } from '../lib/db'
 import { CHECKOUT_FUNCTION } from '../lib/functions'
 import { AppNav } from '../components/AppNav'
 import { useDarkMode } from '../hooks/useDarkMode'
+import { trackCheckout } from '../lib/analytics'
 
 export default function Account() {
   const navigate = useNavigate()
@@ -16,13 +17,24 @@ export default function Account() {
   const [subPlan, setSubPlan] = useState<string | null>(null)
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
   const [dark, setDark] = useDarkMode()
+  const [language, setLanguage] = useState<string>('fr')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function handleLanguageChange(lang: string) {
+    setLanguage(lang)
+    const { data } = await supabase.auth.getUser()
+    if (!data.user) return
+    await supabase.from('user_profiles').update({ language: lang }).eq('id', data.user.id)
+  }
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return
       setEmail(data.user.email ?? '')
       setUserId(data.user.id)
       setAvatarUrl(data.user.user_metadata?.avatar_url ?? null)
+      const { data: profile } = await supabase.from('user_profiles').select('language').eq('id', data.user.id).maybeSingle()
+      if (profile?.language) setLanguage(profile.language)
     })
     getSubscriptionStatus().then(({ isSubscribed, plan }) => {
       setIsSubscribed(isSubscribed)
@@ -38,6 +50,7 @@ export default function Account() {
         body: { plan, userId, email },
       })
       if (error || !data?.url) throw error ?? new Error('No checkout URL')
+      trackCheckout(plan, 'account')
       window.location.href = data.url
     } catch {
       setCheckoutLoading(null)
@@ -156,7 +169,17 @@ export default function Account() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid var(--line)' }}>
             <span style={{ font: '400 14.5px var(--sans)', color: 'var(--ink)' }}>Reading language</span>
-            <span style={{ font: '400 13.5px var(--sans)', color: 'var(--faint)' }}>French</span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[{ code: 'fr', label: 'French' }, { code: 'ja', label: 'Japanese' }, { code: 'de', label: 'German' }, { code: 'es', label: 'Spanish' }].map(({ code, label }) => (
+                <button key={code} onClick={() => handleLanguageChange(code)} style={{
+                  font: '500 13px var(--sans)', borderRadius: 999, padding: '6px 14px', cursor: 'pointer',
+                  border: language === code ? '1px solid var(--gold)' : '1px solid var(--line2)',
+                  background: language === code ? 'var(--goldBg)' : 'transparent',
+                  color: language === code ? 'var(--gold)' : 'var(--faint)',
+                  transition: 'all .15s',
+                }}>{label}</button>
+              ))}
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid var(--line)' }}>
             <span style={{ font: '400 14.5px var(--sans)', color: 'var(--ink)' }}>Daily reminder</span>

@@ -35,7 +35,7 @@ export default function Terms() {
 
           <section>
             <h2 className="serif" style={{ fontWeight: 400, fontSize: 22, color: 'var(--ink)', margin: '0 0 12px' }}>Subscriptions and billing</h2>
-            <p style={{ margin: 0 }}>After your free trial, continued access requires a paid subscription (Monthly at $1.99/month, Yearly at $9.99/year, or a one-time Lifetime access at $29.99). Subscriptions renew automatically unless cancelled before the renewal date. You may cancel at any time; access continues until the end of the paid period. We do not offer refunds for unused periods of a current subscription cycle, except where required by law.</p>
+            <p style={{ margin: 0 }}>After your free trial, continued access requires a paid subscription (Monthly at $5.99/month, Yearly at $39.99/year, or a one-time Lifetime access at $129). Subscriptions renew automatically unless cancelled before the renewal date. You may cancel at any time; access continues until the end of the paid period. We do not offer refunds for unused periods of a current subscription cycle, except where required by law.</p>
           </section>
 
           <section>

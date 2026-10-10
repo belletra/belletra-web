@@ -4,6 +4,8 @@ import { AppNav } from '../components/AppNav'
 import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, logReading, getSubscriptionStatus, markDone, unmarkDone, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { CHECKOUT_FUNCTION } from '../lib/functions'
+import { languageName, speechLocale } from '../lib/languages'
+import { trackCheckout } from '../lib/analytics'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 
@@ -34,6 +36,7 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
         body: { plan, userId, email },
       })
       if (error || !data?.url) throw error ?? new Error('No checkout URL')
+      trackCheckout(plan, 'paywall')
       window.location.href = data.url
     } catch {
       setLoading(false)
@@ -115,7 +118,7 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
 
 // ── Audio hook ────────────────────────────────────────────────────────────────
 
-function useLineAudio(audioPath?: string | null) {
+function useLineAudio(audioPath?: string | null, language?: string | null) {
   const [playing, setPlaying] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const stop = useCallback(() => {
@@ -128,20 +131,21 @@ function useLineAudio(audioPath?: string | null) {
     const url = audioPath ? `${SUPABASE_URL}/storage/v1/object/public/audio/${audioPath}` : null
     if (url) {
       const a = new Audio(url); audioRef.current = a
-      a.onended = stop; a.onerror = () => fallbackSpeak(text, stop, setPlaying)
-      a.play().then(() => setPlaying(true)).catch(() => fallbackSpeak(text, stop, setPlaying))
-    } else { fallbackSpeak(text, stop, setPlaying) }
-  }, [playing, stop, audioPath])
+      a.onended = stop; a.onerror = () => fallbackSpeak(text, language, stop, setPlaying)
+      a.play().then(() => setPlaying(true)).catch(() => fallbackSpeak(text, language, stop, setPlaying))
+    } else { fallbackSpeak(text, language, stop, setPlaying) }
+  }, [playing, stop, audioPath, language])
   useEffect(() => () => stop(), [stop])
   return { play, stop, playing }
 }
 
-function fallbackSpeak(text: string, onEnd: () => void, setPlaying: (v: boolean) => void) {
+function fallbackSpeak(text: string, language: string | null | undefined, onEnd: () => void, setPlaying: (v: boolean) => void) {
   if (typeof speechSynthesis === 'undefined') return
   const u = new SpeechSynthesisUtterance(text)
-  u.lang = 'fr-FR'; u.rate = 0.82
-  const fr = speechSynthesis.getVoices().find(v => (v.lang || '').toLowerCase().startsWith('fr'))
-  if (fr) u.voice = fr
+  u.lang = speechLocale(language); u.rate = 0.82
+  const prefix = u.lang.slice(0, 2).toLowerCase()
+  const matchingVoice = speechSynthesis.getVoices().find(v => (v.lang || '').toLowerCase().startsWith(prefix))
+  if (matchingVoice) u.voice = matchingVoice
   u.onend = onEnd; u.onerror = onEnd
   speechSynthesis.cancel(); speechSynthesis.speak(u)
   setPlaying(true)
@@ -177,11 +181,54 @@ function WordCard({ word, onClose }: { word: Word; onClose: () => void }) {
   )
 }
 
-function TappableLine({ lines, words, selectedToken, onSelect, fontSize }: {
-  lines: string[]; words: Word[]; selectedToken: string | null; onSelect: (tok: string | null) => void; fontSize: string
+function TappableLine({ lines, words, selectedToken, onSelect, fontSize, language }: {
+  lines: string[]; words: Word[]; selectedToken: string | null; onSelect: (tok: string | null) => void; fontSize: string; language?: string
 }) {
   const wordMap = new Map(words.map(w => [w.token.toLowerCase(), w]))
   const lookup = (tok: string) => wordMap.get(tok.toLowerCase()) ?? wordMap.get(tok.charAt(0).toUpperCase() + tok.slice(1).toLowerCase()) ?? null
+  const isJa = language === 'ja'
+
+  // For Japanese: render each word token as a ruby element inline within the full text
+  if (isJa) {
+    return (
+      <div className="serif" style={{ fontSize, lineHeight: 2.2, color: 'var(--ink)', marginBottom: 4 }}>
+        «&nbsp;{lines.map((line, li) => {
+          // Build output: scan through the line matching word tokens greedily
+          const parts: React.ReactNode[] = []
+          let remaining = line
+          let pi = 0
+          while (remaining.length > 0) {
+            // Try to match any word token at current position
+            const matched = words.find(w => remaining.startsWith(w.token))
+            if (matched) {
+              const isSel = selectedToken === matched.token
+              parts.push(
+                <ruby key={pi++} role="button" tabIndex={0}
+                  onClick={() => onSelect(isSel ? null : matched.token)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(isSel ? null : matched.token) } }}
+                  style={{
+                    cursor: 'pointer',
+                    color: isSel ? 'var(--blue)' : 'var(--ink)',
+                    borderBottom: `1.5px dashed ${isSel ? 'var(--blue)' : 'var(--gold)'}`,
+                    paddingBottom: 1, transition: 'color .18s',
+                    rubyAlign: 'center',
+                  }}>
+                  {matched.token}
+                  {matched.reading && <rt style={{ fontSize: '0.42em', color: isSel ? 'var(--blue)' : 'var(--soft)', fontFamily: 'var(--sans)', fontWeight: 400, letterSpacing: 0 }}>{matched.reading}</rt>}
+                </ruby>
+              )
+              remaining = remaining.slice(matched.token.length)
+            } else {
+              // No match — emit one character as-is
+              parts.push(<span key={pi++}>{remaining[0]}</span>)
+              remaining = remaining.slice(1)
+            }
+          }
+          return <span key={li}>{parts}{li < lines.length - 1 && <br />}</span>
+        })}&nbsp;»
+      </div>
+    )
+  }
 
   return (
     <div className="serif" style={{ fontSize, lineHeight: 1.45, color: 'var(--ink)', marginBottom: 4 }}>
@@ -270,7 +317,7 @@ export default function Sentence() {
     })
   }, [id])
 
-  const audio = useLineAudio(data?.sentence.audio)
+  const audio = useLineAudio(data?.sentence.audio, data?.sentence.language)
   const fullText = data ? (data.sentence.lines ? data.sentence.lines.join(' ') : data.sentence.text) : ''
 
   const handleKeep = async () => {
@@ -338,7 +385,7 @@ export default function Sentence() {
                 <div style={{ font: '600 10px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 4 }}>Six lenses, fully written</div>
                 {[
                   ['Grammar', 'The construction beneath the beauty'],
-                  ['✦ Genius', 'What only French can do here'],
+                  ['✦ Genius', `What only ${languageName(p.language)} can do here`],
                   ['♪ Music', 'Sound, rhythm, breath'],
                   ['⇄ Turn', 'Where the meaning shifts'],
                   ['◦ Silence', 'What the line withholds'],
@@ -412,6 +459,7 @@ export default function Sentence() {
                 selectedToken={selectedToken}
                 onSelect={setSelectedToken}
                 fontSize="clamp(34px,4.5vw,52px)"
+                language={sentence.language ?? undefined}
               />
             ) : (
               <div className="serif" style={{ fontSize: 'clamp(34px,4.5vw,52px)', lineHeight: 1.45, color: 'var(--ink)' }}>
@@ -486,7 +534,7 @@ export default function Sentence() {
             )}
 
             {genius && (
-              <AnalysisCard title={`✦ Only in French — ${genius.name ?? ''}`} accent="var(--gold)" deep={genius.deep}>
+              <AnalysisCard title={`✦ Only in ${languageName(sentence.language)} — ${genius.name ?? ''}`} accent="var(--gold)" deep={genius.deep}>
                 <div style={{ font: '400 14.5px/1.75 var(--sans)', color: 'var(--ink)', marginBottom: 12 }}>{genius.surface}</div>
                 {genius.contrast && (
                   <div style={{ font: '400 13px/1.6 var(--sans)', color: 'var(--faint)', paddingTop: 12, borderTop: '1px solid var(--line)' }}>{genius.contrast}</div>

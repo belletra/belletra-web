@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { trackEvent } from '../lib/analytics'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -15,17 +16,31 @@ export default function Signup() {
     e.preventDefault()
     setError('')
     setLoading(true)
+
     const { data, error: err } = await supabase.auth.signUp({ email, password })
-    setLoading(false)
-    if (err) { setError(err.message); return }
-    // If session is immediately available, email auto-confirm is on — go to app
-    if (data.session) { navigate('/app'); return }
-    // Supabase returns a fake user with no identities when the email is already registered
-    if (data.user && data.user.identities && data.user.identities.length === 0) {
-      setError('An account with this email already exists. Try signing in instead.')
+
+    // Email already registered — try signing them in directly
+    if (err?.message?.includes('already registered') || (data.user && data.user.identities?.length === 0)) {
+      const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({ email, password })
+      setLoading(false)
+      if (signInErr) {
+        if (signInErr.message?.includes('Email not confirmed')) {
+          setError('Please confirm your email first. Check your inbox for the confirmation link.')
+        } else {
+          setError('This email is already registered. Check your password and try again.')
+        }
+        return
+      }
+      if (signInData.session) { navigate('/app'); return }
       return
     }
-    // Otherwise email confirmation is required — show the check-email screen
+
+    setLoading(false)
+    if (err) { setError(err.message); return }
+
+    // New signup — session means auto-confirmed, no session means needs confirmation
+    trackEvent('sign_up', { method: 'email' })
+    if (data.session) { navigate('/app'); return }
     setConfirmed(true)
   }
 

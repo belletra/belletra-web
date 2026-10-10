@@ -2,6 +2,22 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DescentPhone } from '../components/DescentPhone'
 
+const APPLE_URL = 'https://apps.apple.com/us/app/belletra/id6784103450'
+const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.ruiyangzhang.belletra'
+
+function StoreBadges() {
+  return (
+    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <a href={APPLE_URL} target="_blank" rel="noopener noreferrer" aria-label="Download Belletra on the App Store">
+        <img src="/app-store.svg" alt="Download on the App Store" style={{ height: 44, width: 'auto', display: 'block' }} />
+      </a>
+      <a href={PLAY_URL} target="_blank" rel="noopener noreferrer" aria-label="Get Belletra on Google Play">
+        <img src="/google-play-badge.png" alt="Get it on Google Play" style={{ height: 44, width: 'auto', display: 'block' }} />
+      </a>
+    </div>
+  )
+}
+
 export default function Landing() {
   const [darkMode, setDarkMode] = useState(false)
 
@@ -26,6 +42,8 @@ export default function Landing() {
         .bl-store-btn:hover { opacity: .88; }
         .bl-web-link:hover { border-color: var(--gold) !important; }
         .bl-footer-link:hover { color: var(--ink) !important; }
+        .bl-guide-card { transition: transform .24s cubic-bezier(.2,.7,.2,1), border-color .24s, box-shadow .24s; }
+        .bl-guide-card:hover { transform: translateY(-4px); border-color: var(--gold) !important; box-shadow: var(--shadow-card); }
         @media (max-width: 860px) {
           .bl-hero-grid { grid-template-columns: 1fr !important; }
           .hero-phone { display: none !important; }
@@ -34,6 +52,7 @@ export default function Landing() {
           .bl-method-grid { grid-template-columns: 1fr !important; }
           .bl-lang-grid { grid-template-columns: 1fr !important; }
           .bl-price-grid { grid-template-columns: 1fr !important; }
+          .bl-guide-grid { grid-template-columns: 1fr 1fr !important; }
         }
         @media (max-width: 540px) {
           .bl-feat-grid { grid-template-columns: 1fr !important; }
@@ -41,6 +60,7 @@ export default function Landing() {
           .bl-nav-login { display: none !important; }
           .bl-pill { font-size: 10px !important; padding: 5px 10px !important; }
           .bl-stats-grid { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
+          .bl-guide-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -88,16 +108,16 @@ export default function Landing() {
             color: 'var(--gold)', border: '1px solid var(--line2)', borderRadius: 999,
             padding: '7px 14px', marginBottom: 26, whiteSpace: 'nowrap',
           }} className="bl-pill">
-            <span className="sym" style={{ fontSize: 12 }}>✧</span> French, through its greatest sentences
+            <span className="sym" style={{ fontSize: 12 }}>✧</span> French, Japanese, German & Spanish — available now
           </div>
           <h1 className="serif" style={{
             fontWeight: 400, fontSize: 'clamp(42px,5.4vw,72px)', lineHeight: 1.04,
             letterSpacing: '-.01em', margin: '0 0 22px',
           }}>
-            Learn the French that<br /><span style={{ fontStyle: 'italic', color: 'var(--gold)' }}>writers reached for.</span>
+            Learn the language<br /><span style={{ fontStyle: 'italic', color: 'var(--gold)' }}>writers reached for.</span>
           </h1>
           <p style={{ font: '400 19px/1.65 var(--sans)', color: 'var(--soft)', maxWidth: 480, margin: '0 0 32px' }}>
-            Not the French that merely gets you by. Every sentence is hand-picked from poetry and prose, then taken apart word by word — why this verb, what the grammar unlocks, why only French can say it this way.
+            Not the language that merely gets you by. Every sentence — French, Japanese, German, or Spanish — is hand-picked from poetry and prose, then taken apart word by word: why this verb, what the grammar unlocks, why only this language can say it this way.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             <Link to="/signup" className="bl-hero-cta" style={{
@@ -107,7 +127,10 @@ export default function Landing() {
             }}>Start your free week →</Link>
             <a href="#method" style={{ font: '500 15px var(--sans)', color: 'var(--ink)', padding: '14px 6px', textDecoration: 'none' }}>See how it works</a>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginTop: 34, font: '400 13.5px var(--sans)', color: 'var(--faint)' }}>
+          <div style={{ marginTop: 28 }}>
+            <StoreBadges />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginTop: 22, font: '400 13.5px var(--sans)', color: 'var(--faint)' }}>
             <span>7-day free trial</span>
             <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--line2)', display: 'inline-block' }}></span>
             <span>No card to read your first line</span>
@@ -364,21 +387,32 @@ export default function Landing() {
         <div className="bl-lang-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
           <div>
             <div style={{ font: '600 12px var(--sans)', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Grows with you</div>
-            <h2 className="serif" style={{ fontWeight: 400, fontSize: 'clamp(30px,3.6vw,42px)', margin: '0 0 18px', letterSpacing: '-.01em', lineHeight: 1.15 }}>French today.<br />The language you ask for next.</h2>
+            <h2 className="serif" style={{ fontWeight: 400, fontSize: 'clamp(30px,3.6vw,42px)', margin: '0 0 18px', letterSpacing: '-.01em', lineHeight: 1.15 }}>French, Japanese, German & Spanish.<br />The language you ask for next.</h2>
             <p style={{ font: '400 17px/1.7 var(--sans)', color: 'var(--soft)', margin: '0 0 22px', maxWidth: 440 }}>
-              Belletra opens with French, authored to full depth. Which language we build next isn't guesswork — you tell us. When you set up the app, you cast a vote, and the languages readers ask for most are the ones we write.
+              Belletra is fully authored in French, Japanese, German, and Spanish — hundreds of sentences deep in each, with more added every week. Which language we build next isn't guesswork: when you set up the app, you cast a vote, and the languages readers ask for most are the ones we write.
             </p>
             <a href="#pricing" style={{ font: '600 15px var(--sans)', color: 'var(--gold)', textDecoration: 'none' }}>Cast your vote inside the app →</a>
           </div>
           <div style={{ background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 20, padding: 30, boxShadow: 'var(--shadow-card)' }}>
-            <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 18 }}>What readers are asking for</div>
+            <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 12 }}>Available now</div>
+            {[
+              { lang: 'French', native: 'Français', live: true },
+              { lang: 'Japanese', native: '日本語', live: true },
+              { lang: 'German', native: 'Deutsch', live: true },
+              { lang: 'Spanish', native: 'Español', live: true },
+            ].map(({ lang, native }) => (
+              <div key={lang} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <span className="serif" style={{ fontSize: 15, color: 'var(--ink)', width: 90 }}>{lang}</span>
+                <span style={{ font: '400 13px var(--sans)', color: 'var(--soft)', fontStyle: 'italic' }}>{native}</span>
+                <span style={{ marginLeft: 'auto', font: '600 11px var(--sans)', color: 'var(--gold)', letterSpacing: '.1em', textTransform: 'uppercase' }}>Live</span>
+              </div>
+            ))}
+            <div style={{ font: '600 11px var(--sans)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--faint)', marginTop: 18, marginBottom: 12 }}>What readers are voting for next</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
               {[
                 { lang: 'Italian', pct: '82%' },
-                { lang: 'Spanish', pct: '71%' },
                 { lang: 'Latin', pct: '58%' },
                 { lang: 'Russian', pct: '44%' },
-                { lang: 'Japanese', pct: '38%' },
               ].map(({ lang, pct }) => (
                 <div key={lang} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span className="serif" style={{ fontSize: 15, width: 84, color: 'var(--ink)' }}>{lang}</span>
@@ -457,6 +491,34 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ===== LANGUAGE READING GUIDES ===== */}
+      <section id="guides" style={{ maxWidth: 1120, margin: '0 auto', padding: '88px 32px 34px' }}>
+        <div style={{ maxWidth: 700, marginBottom: 42 }}>
+          <div style={{ font: '600 12px var(--sans)', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 14 }}>Learn through literature</div>
+          <h2 className="serif" style={{ fontWeight: 400, fontSize: 'clamp(32px,4vw,46px)', margin: '0 0 14px', letterSpacing: '-.01em' }}>Start with the language you read.</h2>
+          <p style={{ font: '400 16px/1.7 var(--sans)', color: 'var(--soft)', margin: 0 }}>
+            Each guide shows how close reading works in that language—and when a full reader, speaking practice, or another tool is the better fit.
+          </p>
+        </div>
+        <div className="bl-guide-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+          {[
+            { name: 'French', native: 'Français', href: '/learn-french-through-literature', detail: 'Sound, etymology, grammar, and register.' },
+            { name: 'Japanese', native: '日本語', href: '/learn-japanese-through-literature', detail: 'Kanji choices, particles, omission, and voice.' },
+            { name: 'German', native: 'Deutsch', href: '/learn-german-through-literature', detail: 'Clause frames, compounds, syntax, and tone.' },
+            { name: 'Spanish', native: 'Español', href: '/learn-spanish-through-literature', detail: 'Aspect, mood, word order, and variation.' },
+          ].map(({ name, native, href, detail }) => (
+            <a key={name} href={href} className="bl-guide-card" style={{ display: 'block', background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 18, padding: '25px 23px', textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+                <span className="serif" style={{ fontSize: 23, color: 'var(--ink)' }}>{name}</span>
+                <span style={{ font: '400 13px var(--sans)', color: 'var(--gold)' }}>{native}</span>
+              </div>
+              <p style={{ font: '400 14px/1.55 var(--sans)', color: 'var(--soft)', margin: '0 0 18px' }}>{detail}</p>
+              <span style={{ font: '600 13px var(--sans)', color: 'var(--gold)' }}>Read the guide →</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
       {/* ===== FINAL CTA ===== */}
       <section style={{ maxWidth: 760, margin: '0 auto', padding: '96px 32px', textAlign: 'center' }}>
         <div className="sym" style={{ fontSize: 26, color: 'var(--gold)', marginBottom: 24 }}>✧</div>
@@ -470,29 +532,8 @@ export default function Landing() {
           boxShadow: 'var(--shadow-cta)', textDecoration: 'none',
         }}>Read one sentence free →</Link>
 
-        <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginTop: 34 }}>
-          <a href="#top" aria-label="Download on the App Store" className="bl-store-btn" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 12,
-            background: 'var(--ink)', color: 'var(--card)', padding: '12px 20px', borderRadius: 14,
-            textDecoration: 'none',
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.7 1.3c.1 1-.3 2-.95 2.78-.69.82-1.78 1.45-2.79 1.36-.12-.98.39-2 .98-2.66.66-.78 1.82-1.4 2.76-1.48zM19.9 17.2c-.5 1.18-.78 1.7-1.43 2.78-.9 1.5-2.18 3.36-3.76 3.37-1.4.01-1.76-.92-3.66-.91-1.9.01-2.3.93-3.7.92-1.58-.01-2.79-1.69-3.7-3.18-2.53-4.2-2.8-9.12-1.24-11.74.9-1.5 2.32-2.38 3.66-2.38 1.36 0 2.22.95 3.66.95 1.4 0 2.25-.95 3.83-.95 1.18 0 2.43.64 3.32 1.75-2.92 1.6-2.45 5.77.02 7.39z"/></svg>
-            <span style={{ textAlign: 'left', lineHeight: 1.12 }}>
-              <span style={{ display: 'block', font: '400 10px var(--sans)', opacity: .82, letterSpacing: '.02em' }}>Download on the</span>
-              <span style={{ display: 'block', font: '600 17px var(--sans)', letterSpacing: '.01em' }}>App Store</span>
-            </span>
-          </a>
-          <a href="#top" aria-label="Get it on Google Play" className="bl-store-btn" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 12,
-            background: 'var(--ink)', color: 'var(--card)', padding: '12px 20px', borderRadius: 14,
-            textDecoration: 'none',
-          }}>
-            <svg width="19" height="21" viewBox="0 0 20 22" fill="currentColor" aria-hidden="true"><path d="M1.1 1.04A1 1 0 0 0 .8 1.8v18.4a1 1 0 0 0 1.53.85l1.1-.66L13.2 11 3.43.61 2.33-.05A1 1 0 0 0 1.1 1.04z" transform="translate(0 .9)"/><path d="M13.2 11l3.05-3.05 3.2 1.84a1 1 0 0 1 0 1.73l-3.2 1.86L13.2 11z"/></svg>
-            <span style={{ textAlign: 'left', lineHeight: 1.12 }}>
-              <span style={{ display: 'block', font: '400 10px var(--sans)', opacity: .82, letterSpacing: '.02em' }}>Get it on</span>
-              <span style={{ display: 'block', font: '600 17px var(--sans)', letterSpacing: '.01em' }}>Google Play</span>
-            </span>
-          </a>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 34 }}>
+          <StoreBadges />
         </div>
         <div style={{ marginTop: 22 }}>
           <Link to="/login" className="bl-web-link" style={{
@@ -509,12 +550,13 @@ export default function Landing() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 'auto' }}>
             <span className="serif" style={{ fontSize: 18 }}>Belletra</span>
             <span className="sym" style={{ fontSize: 11, color: 'var(--gold)' }}>✧</span>
-            <span style={{ font: '400 13px var(--sans)', color: 'var(--faint)' }}>The French that writers reached for.</span>
+            <span style={{ font: '400 13px var(--sans)', color: 'var(--faint)' }}>The language that writers reached for.</span>
           </div>
           <div style={{ display: 'flex', gap: 22, font: '400 13px var(--sans)', color: 'var(--faint)' }}>
             <a href="#features" className="bl-footer-link" style={{ textDecoration: 'none', color: 'var(--faint)' }}>Features</a>
             <a href="#method" className="bl-footer-link" style={{ textDecoration: 'none', color: 'var(--faint)' }}>Method</a>
             <a href="#pricing" className="bl-footer-link" style={{ textDecoration: 'none', color: 'var(--faint)' }}>Pricing</a>
+            <a href="#guides" className="bl-footer-link" style={{ textDecoration: 'none', color: 'var(--faint)' }}>Guides</a>
             <Link to="/privacy" className="bl-footer-link" style={{ textDecoration: 'none', color: 'var(--faint)' }}>Privacy</Link>
             <Link to="/terms" className="bl-footer-link" style={{ textDecoration: 'none', color: 'var(--faint)' }}>Terms</Link>
           </div>

@@ -20,7 +20,7 @@ export default function Privacy() {
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '72px 32px 96px' }}>
         <div style={{ font: '600 12px var(--sans)', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 18 }}>Legal</div>
         <h1 className="serif" style={{ fontWeight: 400, fontSize: 'clamp(32px,4vw,46px)', margin: '0 0 14px', letterSpacing: '-.01em' }}>Privacy Policy</h1>
-        <p style={{ font: '400 14px var(--sans)', color: 'var(--faint)', marginBottom: 48 }}>Last updated: June 2026</p>
+        <p style={{ font: '400 14px var(--sans)', color: 'var(--faint)', marginBottom: 48 }}>Last updated: October 2026</p>
 
         <div style={{ font: '400 16px/1.8 var(--sans)', color: 'var(--soft)', display: 'flex', flexDirection: 'column', gap: 32 }}>
           <section>
@@ -30,12 +30,12 @@ export default function Privacy() {
 
           <section>
             <h2 className="serif" style={{ fontWeight: 400, fontSize: 22, color: 'var(--ink)', margin: '0 0 12px' }}>What we do not collect</h2>
-            <p style={{ margin: 0 }}>We do not collect your location, contacts, or any data beyond what is needed to run the app. We do not sell your data to third parties. We do not serve advertising of any kind.</p>
+            <p style={{ margin: 0 }}>We do not collect your contacts or serve advertising. We do not sell your personal data. We use Google Analytics on the website to understand pages viewed, general device and browser information, approximate region, and anonymised actions such as account creation or starting checkout. We do not send your email address, payment details, sentence text, or anthology content to Google Analytics.</p>
           </section>
 
           <section>
             <h2 className="serif" style={{ fontWeight: 400, fontSize: 22, color: 'var(--ink)', margin: '0 0 12px' }}>How we use your data</h2>
-            <p style={{ margin: 0 }}>Your data is used to authenticate you, personalise your study queue (spaced review), and save your anthology across devices. We may use anonymised, aggregated usage patterns to improve the app. We will never contact you for marketing purposes without your explicit opt-in.</p>
+            <p style={{ margin: 0 }}>Your data is used to authenticate you, personalise your study queue (spaced review), and save your anthology across devices. We use aggregated website and conversion measurements to improve the product and understand which educational guides help readers discover it. We will never contact you for marketing purposes without your explicit opt-in.</p>
           </section>
 
           <section>
@@ -50,7 +50,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="serif" style={{ fontWeight: 400, fontSize: 22, color: 'var(--ink)', margin: '0 0 12px' }}>Cookies</h2>
-            <p style={{ margin: 0 }}>We use a single session cookie to keep you signed in. We do not use tracking, analytics, or advertising cookies.</p>
+            <p style={{ margin: 0 }}>We use session storage needed to keep you signed in. Google Analytics may use first-party cookies or similar identifiers to distinguish visits and measure site usage. These measurements are not used by Belletra to serve advertising, and we do not combine them with your email address or reading content.</p>
           </section>
 
           <section>

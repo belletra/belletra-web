@@ -1,5 +1,12 @@
 import { supabase } from './supabase'
 
+export async function getUserLanguage(): Promise<string> {
+  const { data } = await supabase.auth.getUser()
+  if (!data.user) return 'fr'
+  const { data: profile } = await supabase.from('user_profiles').select('language').eq('id', data.user.id).maybeSingle()
+  return profile?.language ?? 'fr'
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface Sentence {
@@ -16,6 +23,7 @@ export interface Sentence {
   status: string
   translation: string | null
   plain_register: string | null
+  language: string | null
   ord: number
   // internal authoring fields — never fetched by client queries
   tokens?: string[] | null
@@ -32,6 +40,7 @@ export interface Word {
   gloss: string
   etymology_surface: string | null
   etymology_deep: string | null
+  reading: string | null
   ord: number
 }
 
@@ -81,18 +90,19 @@ export interface ReadingLogEntry {
 // ── Public queries ─────────────────────────────────────────────────────────────
 
 // Display fields only — no internal authoring data exposed to client
-const SENTENCE_DISPLAY = 'id, text, lines, teaser, audio, author, work, year, cefr, feature, status, translation, plain_register, ord'
+const SENTENCE_DISPLAY = 'id, text, lines, teaser, audio, author, work, year, cefr, feature, status, translation, plain_register, language, ord'
 
 export async function getTodaySentence(): Promise<Sentence | null> {
-  // Seed with today's date so every user gets the same sentence each day
   const today = new Date().toISOString().slice(0, 10)
   const seed = today.split('-').reduce((acc, n) => acc * 100 + parseInt(n), 0)
+  const language = await getUserLanguage()
 
   const { data: all } = await supabase
     .from('sentences')
     .select('id')
     .eq('status', 'published')
     .eq('human_verified', true)
+    .eq('language', language)
   if (!all || all.length === 0) return null
 
   const idx = seed % all.length
@@ -111,12 +121,14 @@ export async function getTomorrowSentence(): Promise<Pick<Sentence,'id'|'text'|'
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowStr = tomorrow.toISOString().slice(0, 10)
   const seed = tomorrowStr.split('-').reduce((acc, n) => acc * 100 + parseInt(n), 0)
+  const language = await getUserLanguage()
 
   const { data: all } = await supabase
     .from('sentences')
     .select('id')
     .eq('status', 'published')
     .eq('human_verified', true)
+    .eq('language', language)
   if (!all || all.length === 0) return null
 
   const idx = seed % all.length
@@ -142,11 +154,13 @@ export interface SentenceCard {
 }
 
 export async function getAllSentences(): Promise<SentenceCard[]> {
+  const language = await getUserLanguage()
   const { data } = await supabase
     .from('sentences')
     .select('id, text, author, cefr, feature, status, ord')
     .eq('status', 'published')
     .eq('human_verified', true)
+    .eq('language', language)
     .order('ord', { ascending: true })
     .limit(10000)
   return data ?? []
@@ -161,12 +175,13 @@ export interface SentencePreview {
   year?: number
   cefr?: string
   feature?: string
+  language: string | null
 }
 
 export async function getSentencePreview(id: string): Promise<SentencePreview | null> {
   const { data } = await supabase
     .from('sentences')
-    .select('id, text, author, work, year, cefr, feature')
+    .select('id, text, author, work, year, cefr, feature, language')
     .eq('id', id)
     .single()
   return data
@@ -207,13 +222,21 @@ export async function getSentenceFull(id: string): Promise<{
 export async function getAnthology(limit = 3): Promise<AnthologyItem[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
+  const language = await getUserLanguage()
+
+  // Get sentence_ids in the user's language
+  const { data: langSentences } = await supabase
+    .from('sentences')
+    .select('id')
+    .eq('language', language)
+  const langIds = new Set((langSentences ?? []).map((s: any) => s.id))
+
   const { data } = await supabase
     .from('anthology')
     .select('id, text, author, theme, sentence_id')
     .eq('user_id', user.id)
     .order('id', { ascending: false })
-    .limit(limit)
-  const rows = (data ?? []) as AnthologyItem[]
+  const rows = ((data ?? []) as AnthologyItem[]).filter(r => r.sentence_id && langIds.has(r.sentence_id)).slice(0, limit)
 
   // Backfill sentence_id for old entries
   const missing = rows.filter(r => !r.sentence_id)
@@ -238,11 +261,11 @@ export async function getAnthology(limit = 3): Promise<AnthologyItem[]> {
 export async function getAnthologyCount(): Promise<number> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return 0
-  const { count } = await supabase
-    .from('anthology')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-  return count ?? 0
+  const language = await getUserLanguage()
+  const { data: langSentences } = await supabase.from('sentences').select('id').eq('language', language)
+  const langIds = new Set((langSentences ?? []).map((s: any) => s.id))
+  const { data } = await supabase.from('anthology').select('sentence_id').eq('user_id', user.id)
+  return (data ?? []).filter((r: any) => r.sentence_id && langIds.has(r.sentence_id)).length
 }
 
 export async function addToAnthology(item: Omit<AnthologyItem, 'id'>): Promise<void> {
@@ -301,20 +324,24 @@ export async function addWordsToQueue(
 export async function getWordQueue(): Promise<WordQueueItem[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
+  const language = await getUserLanguage()
+  const { data: langSentences } = await supabase.from('sentences').select('id').eq('language', language)
+  const langIds = new Set((langSentences ?? []).map((s: any) => s.id))
   const { data } = await supabase
     .from('user_word_queue')
     .select('token, gloss, source_author, sentence_id, sentences(text)')
     .eq('user_id', user.id)
     .order('added_at', { ascending: false })
-    .limit(40)
+    .limit(200)
   if (!data || data.length === 0) return []
-  const shuffled = [...data].sort(() => Math.random() - 0.5)
+  const filtered = data.filter((r: any) => r.sentence_id && langIds.has(r.sentence_id))
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5)
   return shuffled.slice(0, 20).map((r: any) => ({
     token: r.token,
     gloss: r.gloss,
     source_author: r.source_author,
     sentence_id: r.sentence_id,
-    sentence_text: r.sentences?.text ?? '',
+    sentence_text: (r.sentences as any)?.text ?? '',
   }))
 }
 
