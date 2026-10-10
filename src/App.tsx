@@ -15,6 +15,7 @@ import Anthology from './pages/Anthology'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Support from './pages/Support'
+import { captureFirstTouch, persistFirstTouchForNewOAuthUser } from './lib/acquisition'
 
 // Auth state is resolved once at app level — not per-route
 interface AuthCtx { session: Session | null; loading: boolean }
@@ -26,6 +27,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    captureFirstTouch()
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       setLoading(false)
@@ -34,6 +36,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === 'PASSWORD_RECOVERY') {
         window.location.href = '/reset-password'
         return
+      }
+      if (event === 'SIGNED_IN' && s?.user) {
+        void persistFirstTouchForNewOAuthUser(s.user)
       }
       setSession(s)
       setLoading(false)

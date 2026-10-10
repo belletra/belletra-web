@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { trackEvent } from '../lib/analytics'
+import { signupMetadata } from '../lib/acquisition'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -17,7 +18,12 @@ export default function Signup() {
     setError('')
     setLoading(true)
 
-    const { data, error: err } = await supabase.auth.signUp({ email, password })
+    const metadata = signupMetadata()
+    const { data, error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: metadata ? { data: metadata } : undefined,
+    })
 
     // Email already registered — try signing them in directly
     if (err?.message?.includes('already registered') || (data.user && data.user.identities?.length === 0)) {

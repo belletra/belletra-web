@@ -30,7 +30,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="serif" style={{ fontWeight: 400, fontSize: 22, color: 'var(--ink)', margin: '0 0 12px' }}>What we do not collect</h2>
-            <p style={{ margin: 0 }}>We do not collect your contacts or serve advertising. We do not sell your personal data. We use Google Analytics on the website to understand pages viewed, general device and browser information, approximate region, and anonymised actions such as account creation or starting checkout. We do not send your email address, payment details, sentence text, or anthology content to Google Analytics.</p>
+            <p style={{ margin: 0 }}>We do not collect your contacts or serve advertising. We do not sell your personal data. We use Google Analytics on the website to understand pages viewed, general device and browser information, approximate region, and anonymised actions such as account creation or starting checkout. When you arrive through a tagged campaign link, we retain the source, medium, campaign name, landing path, and capture time in first-party browser storage and, for a newly created account, in that account's metadata. This lets us connect a later subscription to the campaign that introduced Belletra without placing your email address, payment details, sentence text, or anthology content in the attribution record or sending those fields to Google Analytics.</p>
           </section>
 
           <section>
