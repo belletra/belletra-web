@@ -1,12 +1,19 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { trackEvent } from '../lib/analytics'
 import { signupMetadata } from '../lib/acquisition'
+import { languageName } from '../lib/languages'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const requestedLanguage = searchParams.get('lang')
+  const preferredLanguage = requestedLanguage && ['fr', 'ja', 'de', 'es'].includes(requestedLanguage)
+    ? requestedLanguage
+    : 'fr'
+  const destination = `/app?language=${preferredLanguage}`
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -22,7 +29,10 @@ export default function Signup() {
     const { data, error: err } = await supabase.auth.signUp({
       email,
       password,
-      options: metadata ? { data: metadata } : undefined,
+      options: {
+        data: { ...(metadata ?? {}), preferred_language: preferredLanguage },
+        emailRedirectTo: `${window.location.origin}${destination}`,
+      },
     })
 
     // Email already registered — try signing them in directly
@@ -37,7 +47,7 @@ export default function Signup() {
         }
         return
       }
-      if (signInData.session) { navigate('/app'); return }
+      if (signInData.session) { navigate(destination); return }
       return
     }
 
@@ -46,7 +56,7 @@ export default function Signup() {
 
     // New signup — session means auto-confirmed, no session means needs confirmation
     trackEvent('sign_up', { method: 'email' })
-    if (data.session) { navigate('/app'); return }
+    if (data.session) { navigate(destination); return }
     setConfirmed(true)
   }
 
@@ -54,7 +64,7 @@ export default function Signup() {
     setError('')
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/app` },
+      options: { redirectTo: `${window.location.origin}${destination}` },
     })
     if (err) setError(err.message)
   }
@@ -113,7 +123,7 @@ export default function Signup() {
 
         <h1 className="serif" style={{ fontWeight: 400, fontSize: 28, margin: '0 0 12px' }}>Create your account</h1>
         <p style={{ font: '400 14.5px/1.6 var(--sans)', color: 'var(--soft)', margin: '0 auto 26px', maxWidth: 320 }}>
-          Start with one French sentence tonight. No card required for your free week.
+          Start with one {languageName(preferredLanguage)} sentence tonight. No card required for your free week.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left', marginBottom: 18 }}>

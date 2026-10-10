@@ -30,6 +30,8 @@ function buildRhythm(logDates: string[]): { status: DayStatus; label: string }[]
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const languageParam = searchParams.get('language')
   const [dark, setDark] = useDarkMode()
   const [user, setUser] = useState<{ email?: string; user_metadata?: Record<string, string> } | null>(null)
   const [todaySentence, setTodaySentence] = useState<Sentence | null>(null)
@@ -43,17 +45,23 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null))
+    const load = async () => {
+      const { data } = await supabase.auth.getUser()
+      setUser(data.user ?? null)
 
-    Promise.all([
-      getTodaySentence(),
-      getTomorrowSentence(),
-      getAllSentences(),
-      getAnthology(3),
-      getAnthologyCount(),
-      getWordQueue(),
-      getReadingLog(),
-    ]).then(([today, tomorrow, all, anth, anthCount, queue, log]) => {
+      if (data.user && languageParam && ['fr', 'ja', 'de', 'es'].includes(languageParam)) {
+        await supabase.from('user_profiles').update({ language: languageParam }).eq('id', data.user.id)
+      }
+
+      const [today, tomorrow, all, anth, anthCount, queue, log] = await Promise.all([
+        getTodaySentence(),
+        getTomorrowSentence(),
+        getAllSentences(),
+        getAnthology(3),
+        getAnthologyCount(),
+        getWordQueue(),
+        getReadingLog(),
+      ])
       setTodaySentence(today)
       setTomorrowSentence(tomorrow)
       setLibraryCount(all.length)
@@ -65,15 +73,15 @@ export default function Dashboard() {
       const logDates = log.map(e => e.read_date)
       setRhythm(buildRhythm(logDates))
       setLoading(false)
-    })
-  }, [])
+    }
+    void load()
+  }, [languageParam])
 
   async function signOut() {
     await supabase.auth.signOut()
     navigate('/')
   }
 
-  const [searchParams, setSearchParams] = useSearchParams()
   const upgraded = searchParams.get('upgraded') === 'true'
 
   useEffect(() => {
@@ -84,7 +92,7 @@ export default function Dashboard() {
       }, 5000)
       return () => clearTimeout(t)
     }
-  }, [upgraded])
+  }, [searchParams, setSearchParams, upgraded])
 
   const now = new Date()
   const dateLabel = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })

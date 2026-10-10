@@ -19,6 +19,7 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
   const [plan, setPlan] = useState<'year' | 'month' | 'lifetime'>('year')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const ctaLabel = !userId ? 'Create an account to continue →'
     : loading ? 'Opening checkout…'
@@ -33,7 +34,8 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
   const startCheckout = async () => {
     if (!userId) {
       trackEvent('sign_up_intent', { source: 'locked_sentence_paywall' })
-      navigate('/signup')
+      const language = searchParams.get('lang')
+      navigate(`/signup${language ? `?lang=${language}` : ''}`)
       return
     }
     if (loading) return
@@ -342,7 +344,7 @@ export default function Sentence() {
     if (!data || kept) return
     if (!userId) {
       trackEvent('sign_up_intent', { source: 'keep_line' })
-      navigate('/signup', { state: { from: { pathname: `/app/sentence/${id}` } } })
+      navigate(`/signup${data.sentence.language ? `?lang=${data.sentence.language}` : ''}`, { state: { from: { pathname: `/app/sentence/${id}` } } })
       return
     }
     const [anthErr, wordsErr] = await Promise.all([
@@ -529,7 +531,7 @@ export default function Sentence() {
                   if (!id) return
                   if (!userId) {
                     trackEvent('sign_up_intent', { source: 'mark_done' })
-                    navigate('/signup', { state: { from: { pathname: `/app/sentence/${id}` } } })
+                    navigate(`/signup${sentence.language ? `?lang=${sentence.language}` : ''}`, { state: { from: { pathname: `/app/sentence/${id}` } } })
                     return
                   }
                   if (done) { await unmarkDone(id); setDone(false) }
@@ -589,7 +591,7 @@ export default function Sentence() {
                 )}
                 <AnalysisCard title="Bring it back">
                   <div style={{ font: '400 13.5px/1.7 var(--sans)', color: 'var(--soft)', marginBottom: 14 }}>These words will come back in review — spaced so you keep them just before you forget.</div>
-                  <Link to={userId ? '/app/review' : '/signup'} onClick={() => { if (!userId) trackEvent('sign_up_intent', { source: 'review_prompt' }) }} state={userId ? undefined : { from: { pathname: `/app/sentence/${id}` } }} style={{ display: 'inline-block', font: '600 13.5px var(--sans)', color: 'var(--gold)', background: 'var(--goldBg)', border: '1px solid var(--line2)', borderRadius: 999, padding: '9px 18px', textDecoration: 'none' }}>{userId ? 'Review now →' : 'Save your progress →'}</Link>
+                  <Link to={userId ? '/app/review' : `/signup${sentence.language ? `?lang=${sentence.language}` : ''}`} onClick={() => { if (!userId) trackEvent('sign_up_intent', { source: 'review_prompt' }) }} state={userId ? undefined : { from: { pathname: `/app/sentence/${id}` } }} style={{ display: 'inline-block', font: '600 13.5px var(--sans)', color: 'var(--gold)', background: 'var(--goldBg)', border: '1px solid var(--line2)', borderRadius: 999, padding: '9px 18px', textDecoration: 'none' }}>{userId ? 'Review now →' : 'Save your progress →'}</Link>
                 </AnalysisCard>
               </div>
             )}
