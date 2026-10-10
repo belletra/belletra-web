@@ -92,10 +92,12 @@ export interface ReadingLogEntry {
 // Display fields only — no internal authoring data exposed to client
 const SENTENCE_DISPLAY = 'id, text, lines, teaser, audio, author, work, year, cefr, feature, status, translation, plain_register, language, ord'
 
-export async function getTodaySentence(): Promise<Sentence | null> {
+export async function getTodaySentence(languageOverride?: string): Promise<Sentence | null> {
   const today = new Date().toISOString().slice(0, 10)
   const seed = today.split('-').reduce((acc, n) => acc * 100 + parseInt(n), 0)
-  const language = await getUserLanguage()
+  const language = ['fr', 'ja', 'de', 'es'].includes(languageOverride ?? '')
+    ? languageOverride!
+    : await getUserLanguage()
 
   const { data: all } = await supabase
     .from('sentences')

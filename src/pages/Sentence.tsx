@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { AppNav } from '../components/AppNav'
 import { getSentenceFull, getSentencePreview, getTodaySentence, addToAnthology, addWordsToQueue, logReading, getSubscriptionStatus, markDone, unmarkDone, type Sentence, type Word, type Lens, type SwapAlt, type SentencePreview } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { CHECKOUT_FUNCTION } from '../lib/functions'
 import { languageName, speechLocale } from '../lib/languages'
-import { trackCheckout } from '../lib/analytics'
+import { trackCheckout, trackEvent } from '../lib/analytics'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 
@@ -18,8 +18,10 @@ const VALUE_PROPS = [
 function PaywallGate({ userId, email }: { userId: string; email: string }) {
   const [plan, setPlan] = useState<'year' | 'month' | 'lifetime'>('year')
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
-  const ctaLabel = loading ? 'Opening checkout…'
+  const ctaLabel = !userId ? 'Create an account to continue →'
+    : loading ? 'Opening checkout…'
     : plan === 'lifetime' ? 'Become a member →'
     : 'Start 7-day free trial →'
 
@@ -29,7 +31,12 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
     : 'Free for 7 days — then $5.99 / month.'
 
   const startCheckout = async () => {
-    if (!userId || loading) return
+    if (!userId) {
+      trackEvent('sign_up_intent', { source: 'locked_sentence_paywall' })
+      navigate('/signup')
+      return
+    }
+    if (loading) return
     setLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke(CHECKOUT_FUNCTION, {
@@ -102,7 +109,7 @@ function PaywallGate({ userId, email }: { userId: string; email: string }) {
       <button
         onClick={startCheckout}
         disabled={loading}
-        style={{ width: '100%', font: '600 15px var(--sans)', color: 'var(--card)', background: (loading || !userId) ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '15px 0', cursor: (loading || !userId) ? 'default' : 'pointer', boxShadow: 'var(--shadow-cta)', marginBottom: 10, transition: 'background .2s' }}
+        style={{ width: '100%', font: '600 15px var(--sans)', color: 'var(--card)', background: loading ? 'var(--soft)' : 'var(--gold)', border: 'none', borderRadius: 999, padding: '15px 0', cursor: loading ? 'default' : 'pointer', boxShadow: 'var(--shadow-cta)', marginBottom: 10, transition: 'background .2s' }}
       >
         {ctaLabel}
       </button>
@@ -287,6 +294,7 @@ function AnalysisCard({ title, accent, deep, children }: { title: string; accent
 export default function Sentence() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [data, setData] = useState<{ sentence: Sentence; words: Word[]; lenses: Lens[]; swaps: SwapAlt[] } | null>(null)
   const [preview, setPreview] = useState<SentencePreview | null>(null)
   const [locked, setLocked] = useState(false)
@@ -300,7 +308,7 @@ export default function Sentence() {
   useEffect(() => {
     if (!id) return
     Promise.all([
-      getTodaySentence(),
+      getTodaySentence(searchParams.get('lang') ?? undefined),
       getSubscriptionStatus(),
       supabase.auth.getUser(),
     ]).then(([today, sub, { data: authData }]) => {
@@ -312,16 +320,31 @@ export default function Sentence() {
       if (isLocked) {
         getSentencePreview(id).then(p => { setPreview(p); setLoading(false) })
       } else {
-        getSentenceFull(id).then(d => { setData(d); setLoading(false); logReading(id) })
+        getSentenceFull(id).then(d => {
+          setData(d)
+          setLoading(false)
+          logReading(id)
+          if (!authData.user && d) {
+            trackEvent('free_sentence_view', {
+              language: d.sentence.language ?? 'unknown',
+              source: 'public_read_route',
+            })
+          }
+        })
       }
     })
-  }, [id])
+  }, [id, searchParams])
 
   const audio = useLineAudio(data?.sentence.audio, data?.sentence.language)
   const fullText = data ? (data.sentence.lines ? data.sentence.lines.join(' ') : data.sentence.text) : ''
 
   const handleKeep = async () => {
     if (!data || kept) return
+    if (!userId) {
+      trackEvent('sign_up_intent', { source: 'keep_line' })
+      navigate('/signup', { state: { from: { pathname: `/app/sentence/${id}` } } })
+      return
+    }
     const [anthErr, wordsErr] = await Promise.all([
       addToAnthology({
         text: data.sentence.text,
@@ -504,6 +527,11 @@ export default function Sentence() {
               <button
                 onClick={async () => {
                   if (!id) return
+                  if (!userId) {
+                    trackEvent('sign_up_intent', { source: 'mark_done' })
+                    navigate('/signup', { state: { from: { pathname: `/app/sentence/${id}` } } })
+                    return
+                  }
                   if (done) { await unmarkDone(id); setDone(false) }
                   else { await markDone(id); setDone(true) }
                 }}
@@ -561,7 +589,7 @@ export default function Sentence() {
                 )}
                 <AnalysisCard title="Bring it back">
                   <div style={{ font: '400 13.5px/1.7 var(--sans)', color: 'var(--soft)', marginBottom: 14 }}>These words will come back in review — spaced so you keep them just before you forget.</div>
-                  <Link to="/app/review" style={{ display: 'inline-block', font: '600 13.5px var(--sans)', color: 'var(--gold)', background: 'var(--goldBg)', border: '1px solid var(--line2)', borderRadius: 999, padding: '9px 18px', textDecoration: 'none' }}>Review now →</Link>
+                  <Link to={userId ? '/app/review' : '/signup'} onClick={() => { if (!userId) trackEvent('sign_up_intent', { source: 'review_prompt' }) }} state={userId ? undefined : { from: { pathname: `/app/sentence/${id}` } }} style={{ display: 'inline-block', font: '600 13.5px var(--sans)', color: 'var(--gold)', background: 'var(--goldBg)', border: '1px solid var(--line2)', borderRadius: 999, padding: '9px 18px', textDecoration: 'none' }}>{userId ? 'Review now →' : 'Save your progress →'}</Link>
                 </AnalysisCard>
               </div>
             )}

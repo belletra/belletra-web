@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DescentPhone } from '../components/DescentPhone'
+import { trackEvent } from '../lib/analytics'
 
 const APPLE_URL = 'https://apps.apple.com/us/app/belletra/id6784103450'
 const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.ruiyangzhang.belletra'
@@ -526,7 +527,7 @@ export default function Landing() {
         <p style={{ font: '400 18px/1.6 var(--sans)', color: 'var(--soft)', margin: '0 auto 34px', maxWidth: 480 }}>
           Read your first line tonight — no account, no card. See how deep a single sentence can go.
         </p>
-        <Link to="/signup" className="bl-cta-main" style={{
+        <Link to="/read" className="bl-cta-main" onClick={() => trackEvent('select_content', { content_type: 'free_sentence', item_id: 'homepage_final_cta' })} style={{
           display: 'inline-block', font: '600 16px var(--sans)', color: 'var(--card)',
           background: 'var(--gold)', padding: '16px 32px', borderRadius: 999,
           boxShadow: 'var(--shadow-cta)', textDecoration: 'none',
